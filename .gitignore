@@ -5,3 +5,13 @@ node_modules
 .env*.local
 
 .env*
+
+# dumps do scripts/migrate-kv-to-pg.js — contêm hash de senha de usuários reais,
+# nunca commitar (ver ROADMAP.md §6)
+backups/
+
+.vercel
+.env*
+
+# estado local de sessão do Claude Code (não é do projeto)
+.claude/

@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
-const { kv, sign, readBody, norm, rateLimit } = require('../lib/auth');
+const { readBody, norm, rateLimit, sign } = require('../lib/auth');
+const { getUserByUsername, createUser } = require('../lib/users');
 
 const MAX_USER = 32;
 const MAX_PASSWORD = 128;
@@ -27,12 +28,13 @@ module.exports = async (req, res) => {
   if (String(question).trim().length > MAX_QA || String(answer).trim().length > MAX_QA)
     return res.status(400).json({ error: 'Pergunta ou resposta muito longa.' });
 
-  const exists = await kv.get('user:' + u);
+  const exists = await getUserByUsername(u);
   if (exists) return res.status(409).json({ error: 'Esse usuário já existe.' });
 
   const passHash = await bcrypt.hash(String(password), 10);
   const ansHash = await bcrypt.hash(norm(answer), 10);
-  await kv.set('user:' + u, { username: u, passHash, question: String(question).trim().slice(0, MAX_QA), ansHash, createdAt: Date.now() });
+  const user = await createUser({ username: u, passHash, question: String(question).trim().slice(0, MAX_QA), ansHash });
+  if (!user) return res.status(409).json({ error: 'Esse usuário já existe.' });
 
   return res.status(200).json({ token: sign(u), username: u });
 };

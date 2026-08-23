@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
-const { kv, sign, readBody, norm, rateLimit, timingSafeCompare } = require('../lib/auth');
+const { readBody, norm, rateLimit, sign, timingSafeCompare } = require('../lib/auth');
+const { getUserByUsername, updateUserPassword } = require('../lib/users');
 
 // Passo 2 do "esqueci a senha": valida resposta de segurança e troca a senha.
 // Retorna a mesma mensagem genérica pra usuário inexistente e resposta
@@ -18,12 +19,12 @@ module.exports = async (req, res) => {
   const allowed = await rateLimit(req, 'reset', u, 8, 600); // 8 tentativas / 10min por IP+usuário
   if (!allowed) return res.status(429).json({ error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' });
 
-  const rec = await kv.get('user:' + u);
+  const rec = await getUserByUsername(u);
   const ok = await timingSafeCompare(norm(answer), rec && rec.ansHash);
   if (!rec || !ok) return res.status(401).json({ error: 'Usuário ou resposta de segurança inválidos.' });
   if (String(password || '').length < 6 || String(password || '').length > 128)
     return res.status(400).json({ error: 'Nova senha precisa ter entre 6 e 128 caracteres.' });
-  rec.passHash = await bcrypt.hash(String(password), 10);
-  await kv.set('user:' + u, rec);
+  const passHash = await bcrypt.hash(String(password), 10);
+  await updateUserPassword(rec.id, passHash);
   return res.status(200).json({ token: sign(u), username: u });
 };

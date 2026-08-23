@@ -1,4 +1,5 @@
-const { kv, readBody, norm, rateLimit } = require('../lib/auth');
+const { readBody, norm, rateLimit } = require('../lib/auth');
+const { getUserByUsername } = require('../lib/users');
 
 // Retorna a pergunta de segurança do usuário (passo 1 do "esqueci a senha").
 // Sempre responde 200 com uma pergunta — real se o usuário existe, sintética
@@ -31,6 +32,6 @@ module.exports = async (req, res) => {
   const allowed = await rateLimit(req, 'forgot', u, 8, 600); // 8 tentativas / 10min por IP+usuário
   if (!allowed) return res.status(429).json({ error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' });
 
-  const rec = await kv.get('user:' + u);
+  const rec = await getUserByUsername(u);
   return res.status(200).json({ question: rec ? rec.question : fakeQuestionFor(u) });
 };

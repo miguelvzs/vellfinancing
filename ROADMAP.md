@@ -182,6 +182,34 @@ O blob único `data:<username>` no KV virou um banco Postgres normalizado.
   ter os dados reais acessíveis localmente (`vercel env pull`). Ver
   "Bloqueios" no fim deste documento.
 
+### Features (§5) — pesquisa e priorização
+
+Pesquisa de mercado (busca web, não conhecimento memorizado): Mobills e
+Organizze são os concorrentes pt-BR mais citados — Organizze já oferece
+import automático via Open Finance, alertas de conta e limite por
+categoria; Mobills foca em relatórios e gráficos. YNAB (orçamento
+base-zero) e Monarch (patrimônio líquido, investimentos, relatórios) são
+as referências internacionais mais citadas em 2026. Tendências do setor:
+open banking, lembretes de conta, patrimônio líquido ao longo do tempo,
+orçamento com rollover, forecast de fluxo de caixa.
+
+**Priorização** (valor pro usuário × esforço dado o banco novo do §6 ×
+risco de quebrar algo sem poder testar num browser real nesta sessão):
+
+| Feature                                       | Decisão                   | Por quê                                                                                                                                                            |
+| --------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Busca + filtro + intervalo de datas           | **Feito**                 | Pedido explícito no brief; é literalmente o caso de uso que justifica ter um banco indexado em vez de um blob                                                      |
+| Gestão de categorias                          | **Feito**                 | Schema já suportava (tabela `categories`); baixo risco, endpoint isolado + card novo na UI                                                                         |
+| Relatórios/insights (tendência por categoria) | **Adiado**                | Alto valor, mas exige nova UI de visualização (não só CRUD) — melhor numa sessão com espaço pra desenhar e testar a UX com calma                                   |
+| Orçamento com rollover                        | **Adiado**                | Muda a semântica de `budgets` (deixa de ser só limite fixo por categoria); quis evitar mudar comportamento existente sem poder validar visualmente                 |
+| PWA (offline + instalável)                    | **Adiado**                | Boa sinergia com o cache local que já existe, mas manifest+service worker é uma superfície nova pra testar sem browser disponível                                  |
+| 2FA (TOTP)                                    | **Adiado**                | Adiciona fluxo de auth novo (QR code, códigos de recuperação); §1 já endureceu bastante a auth existente, TOTP é incremento, não bug                               |
+| Backup criptografado                          | **Adiado**                | Viável só no client (Web Crypto API), mas competiu por tempo com o resto; hoje o backup já sai só pra quem tem a conta logada                                      |
+| Multi-moeda                                   | **Não recomendado agora** | Tocaria o modelo de dinheiro em praticamente todo lugar (todo valor precisaria de moeda + taxa de conversão) — risco alto de regressão pro valor que entrega       |
+| Divisão de despesas / compartilhado           | **Fora de escopo**        | O produto é explicitamente single-user por conta (ver `IMPROVE.md` §0) — essa feature muda o modelo de produto, não é um incremento                                |
+| Open Finance (Pluggy/Belvo)                   | **Bloqueado — custo**     | Pluggy ~R$2.500/mês, Belvo ~R$6.000/mês (pesquisa web) — infactível pro estágio atual do projeto; precisaria de decisão de negócio, não é algo pra decidir sozinho |
+| Anexo de recibo                               | **Adiado**                | Precisaria de Vercel Blob (nova integração) só pra essa feature — baixo valor/esforço comparado ao resto da lista                                                  |
+
 ## Limitação conhecida (documentada, não corrigida nesta rodada)
 
 - `parseCsvExtrato`/`csvValue` assumem formato brasileiro (vírgula decimal,

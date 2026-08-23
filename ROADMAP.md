@@ -177,10 +177,34 @@ O blob único `data:<username>` no KV virou um banco Postgres normalizado.
   contém hash de senha) e **verifica que o backup é legível de volta antes
   de tocar no Postgres**; idempotente (pula usuário que já existe no PG, não
   duplica numa segunda execução); nunca escreve nem apaga nada no KV.
-- **Pendente**: rodar a migração de verdade contra dados de produção
-  depende de (a) a integração Neon estar provisionada e (b) o KV de produção
-  ter os dados reais acessíveis localmente (`vercel env pull`). Ver
-  "Bloqueios" no fim deste documento.
+- **Provisionado e validado contra o banco real.** Neon instalado via
+  `vercel integration add neon`, schema aplicado com `drizzle-kit push`.
+  Validado com dois testes exploratórios (não commitados, rodados e
+  descartados nesta sessão): um smoke test direto no `lib/` (criar
+  usuário, seed de categoria, insert/select com join, upsert, unique
+  constraint, cascade delete) e uma bateria via `vercel dev` batendo em
+  todo endpoint HTTP (`register`→`login`→CRUD de transactions/goals/
+  investments/budgets→`import` com dedup real→`export`→`clear-all`).
+  Achou e corrigiu dois bugs reais que só apareceriam contra um banco de
+  verdade:
+  - `createUser` usava `db.transaction()`, que o driver `neon-http`
+    (HTTP stateless, sem BEGIN/COMMIT) não suporta — quebrava todo
+    registro de usuário. Virou dois inserts sequenciais; não-atômico é
+    aceitável aqui porque `resolveCategoryId` cria a categoria sob
+    demanda se o seed falhar no meio.
+  - `rateLimit()` sem try/catch: se o KV cair, `kv.incr()` derrubava
+    login/register/etc inteiros (500). Agora loga e deixa passar —
+    rate limit é defesa em profundidade, não pode ser single point of
+    failure da autenticação.
+- **Migração de dados KV→Postgres: confirmada desnecessária.** Ao
+  provisionar o Neon, descobri que a integração de KV do projeto já
+  estava **desinstalada há 56 dias** — os env vars continuavam anexados
+  ao projeto (órfãos, apontando pra um host que não resolve mais:
+  `ENOTFOUND`). Rodei `scripts/migrate-kv-to-pg.js` contra isso: falha
+  de forma segura (não toca o Postgres, só reporta o erro de conexão) —
+  confirma que não havia dado real acessível pra migrar. Reinstalei um
+  Redis novo (ver Bloqueios) só pra rate limiting voltar a funcionar,
+  não pra recuperar dado nenhum (não havia o que recuperar).
 
 ### Features (§5) — pesquisa e priorização
 
@@ -244,13 +268,20 @@ risco de quebrar algo sem poder testar num browser real nesta sessão):
 
 ## Bloqueios (precisam de você)
 
-- **Provisionar o Postgres**: rodei `vercel login` mas preciso que você
-  complete o login no browser (`! vercel login` no chat) pra eu poder
-  `vercel integration add neon` e `vercel env pull`. Sem isso o código do
-  §6 está pronto e testado onde dava pra testar sem banco, mas não roda
-  contra um Postgres de verdade nesta sessão.
-- **Migração de dados reais**: só depois do ponto acima — e só com um
-  backup verificado (o script já faz isso sozinho) antes de considerar
-  desligar a leitura do KV.
+- ~~Provisionar o Postgres~~ **Resolvido**: Neon provisionado, schema
+  aplicado, validado contra o banco real (ver §6 acima).
+- ~~Migração de dados reais~~ **Resolvido (não havia o que migrar)**:
+  confirmado que o KV antigo já estava morto antes desta sessão começar.
+- **Rate limiting sem Redis conectado**: reinstalar o Upstash/Redis pelo
+  CLI (`vercel integration add upstash-kv` ou `redis`) sempre volta
+  "Additional setup required. Opening browser..." e não completa em modo
+  não-interativo — parece exigir um passo no dashboard (plano/pagamento
+  ou região) que só você consegue ver. Não é bloqueante: `rateLimit()`
+  agora falha aberto se o KV estiver fora do ar (ver fix acima), então
+  login/registro/etc funcionam normalmente sem rate limiting até isso
+  ser resolvido. Quando quiser, complete a instalação em
+  https://vercel.com/miguelvzs-projects/~/stores (ou rode
+  `vercel integration add redis` de novo depois) e me avise pra eu
+  confirmar que `kv.incr` volta a funcionar.
 
 (Este documento continua sendo atualizado conforme o trabalho avança.)

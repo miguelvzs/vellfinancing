@@ -205,7 +205,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // copia lançamento recorrente para meses futuros
-function recurForward(listKey, base, months) {
+async function recurForward(listKey, base, months) {
   for (let k = 1; k <= months; k++) {
     let nm = cm + k,
       ny = cy;
@@ -213,6 +213,11 @@ function recurForward(listKey, base, months) {
       nm -= 12;
       ny++;
     }
+    // o mês alvo pode nunca ter sido carregado (só o mês atual é buscado no
+    // boot — ver js/state.js). Precisa garantir que veio do servidor antes
+    // de ler+escrever, senão gd() devolve vazio e sd() apagaria o que já
+    // existisse lá.
+    await ensureMonthLoaded(nm, ny);
     const nd = gd(nm, ny);
     const copy = { ...base, id: uid(), recur: true };
     if (base.dueDate) {
@@ -226,7 +231,7 @@ function recurForward(listKey, base, months) {
   }
 }
 
-function saveModal() {
+async function saveModal() {
   // DEPÓSITO em meta
   if (mtype === 'deposit') {
     const v = parseFloat(document.getElementById('f-dep')?.value);
@@ -365,6 +370,7 @@ function saveModal() {
         nm = 0;
         ny++;
       }
+      await ensureMonthLoaded(nm, ny);
       const nd = gd(nm, ny);
       let nDue = '';
       if (due) {

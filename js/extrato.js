@@ -25,6 +25,9 @@ function categorizeExtrato(name, kind) {
   return kind === 'income' ? 'Extra' : 'Outros';
 }
 
+// Usado pelo server (api/import.js reexporta esta função) pra dedup — o
+// dedup em si não é mais feito no client (era via mvf3_extrato_hashes no
+// localStorage, que não sincronizava entre dispositivos). Ver ROADMAP.md §2.
 function hashStr(s) {
   let h = 5381;
   for (let i = 0; i < s.length; i++) {
@@ -32,17 +35,6 @@ function hashStr(s) {
     h |= 0;
   }
   return (h >>> 0).toString(36);
-}
-
-function getExtratoHashes() {
-  try {
-    return JSON.parse(localStorage.getItem('mvf3_extrato_hashes') || '{}');
-  } catch (e) {
-    return {};
-  }
-}
-function saveExtratoHashes(h) {
-  localStorage.setItem('mvf3_extrato_hashes', JSON.stringify(h));
 }
 
 function ofxTag(block, tag) {
@@ -117,6 +109,10 @@ function parseCsvExtrato(text) {
   return out;
 }
 
+// Parsing continua no client (precisa de FileReader) — dedup e categorização
+// são feitos no server (POST /api/import), que é a fonte da verdade pro
+// hash de dedup, então reimportar o mesmo extrato em outro dispositivo não
+// duplica nada.
 function importExtrato(input) {
   if (DEMO) {
     demoRO();
@@ -126,13 +122,13 @@ function importExtrato(input) {
   const file = input.files && input.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     const text = e.target.result;
     const isOfx = /<OFX>/i.test(text) || file.name.toLowerCase().endsWith('.ofx');
     let txns;
     try {
       txns = isOfx ? parseOfxExtrato(text) : parseCsvExtrato(text);
-    } catch (err) {
+    } catch {
       toast('Não foi possível ler o arquivo.');
       input.value = '';
       return;
@@ -143,65 +139,35 @@ function importExtrato(input) {
       return;
     }
 
-    const hashes = getExtratoHashes();
-    const buckets = {};
-    let importadas = 0,
-      duplicadas = 0;
-
-    txns.forEach((t) => {
-      const sig = hashStr(t.date.toISOString() + '|' + t.name + '|' + t.value + '|' + t.kind);
-      if (hashes[sig]) {
-        duplicadas++;
-        return;
-      }
-      hashes[sig] = true;
-      importadas++;
-      const m = t.date.getMonth(),
-        y = t.date.getFullYear();
-      const bk = y + '_' + m;
-      if (!buckets[bk]) buckets[bk] = { m, y, items: [] };
-      buckets[bk].items.push(t);
-    });
-
-    if (importadas === 0) {
-      toast('Todas as ' + duplicadas + ' transações já haviam sido importadas.');
-      input.value = '';
-      return;
+    const payload = txns.map((t) => ({ date: t.date.toISOString(), name: t.name, value: t.value, kind: t.kind }));
+    try {
+      const j = await api('import', 'POST', { transactions: payload });
+      applyImportedTransactions(j.items || []);
+      render();
+      const imp = j.imported || 0,
+        dup = j.duplicated || 0;
+      toast(`${imp} transaç${imp !== 1 ? 'ões' : 'ão'} importada${imp !== 1 ? 's' : ''}` + (dup > 0 ? ` (${dup} já existiam)` : '') + '.');
+    } catch (err) {
+      toast('Não foi possível importar: ' + err.message);
     }
-
-    Object.values(buckets).forEach(({ m, y, items }) => {
-      const d = gd(m, y);
-      items.forEach((t) => {
-        const cat = categorizeExtrato(t.name, t.kind);
-        const entry = { id: uid(), name: t.name, value: t.value, cat };
-        if (t.kind === 'income') d.income.push(entry);
-        else d.expenses.push(entry);
-      });
-      sd(d, m, y);
-    });
-
-    saveExtratoHashes(hashes);
-    render();
-    toast(
-      importadas +
-        ' transaç' +
-        (importadas !== 1 ? 'ões' : 'ão') +
-        ' importada' +
-        (importadas !== 1 ? 's' : '') +
-        (duplicadas > 0 ? ' (' + duplicadas + ' já existiam)' : '') +
-        '.',
-    );
     input.value = '';
   };
   reader.readAsText(file);
 }
+
 function clearMonth() {
   if (DEMO) return demoRO();
-  confirm2('Limpar mês', `Apagar todos os lançamentos de ${MN[cm]} de ${cy}? (Metas e investimentos não são afetados.)`, () => {
-    localStorage.removeItem(mk());
-    syncPush();
-    render();
-    toast('Mês limpo.');
+  confirm2('Limpar mês', `Apagar todos os lançamentos de ${MN[cm]} de ${cy}? (Metas e investimentos não são afetados.)`, async () => {
+    try {
+      await api('transactions?year=' + cy + '&month=' + cm, 'DELETE');
+      const empty = { salary: 0, income: [], expenses: [], bills: [] };
+      const key = mk();
+      setMonthCache(key, empty);
+      render();
+      toast('Mês limpo.');
+    } catch (e) {
+      toast('Não foi possível limpar o mês: ' + e.message);
+    }
   });
 }
 function clearAll() {
@@ -209,24 +175,29 @@ function clearAll() {
   confirm2(
     'Apagar tudo',
     'Isso apaga TODOS os dados (meses, metas e investimentos) permanentemente. Recomendamos baixar um backup antes. Continuar?',
-    () => {
-      const keep = ['mvf3_token', 'mvf3_user', 'mvf3_theme'];
-      const ks = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k.startsWith('mvf3_') && !keep.includes(k)) ks.push(k);
+    async () => {
+      try {
+        await api('clear-all', 'POST');
+        resetCache();
+        const keep = ['mvf3_token', 'mvf3_user', 'mvf3_theme'];
+        const ks = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k.startsWith('mvf3_') && !keep.includes(k)) ks.push(k);
+        }
+        ks.forEach((k) => localStorage.removeItem(k));
+        goToday();
+        toast('Todos os dados foram apagados.');
+      } catch (e) {
+        toast('Não foi possível apagar os dados: ' + e.message);
       }
-      ks.forEach((k) => localStorage.removeItem(k));
-      syncPush();
-      goToday();
-      toast('Todos os dados foram apagados.');
     },
   );
 }
 
 // Exporta as funções puras (sem dependência de DOM/localStorage) pra teste
-// em Node via node:test. Em browser, `module` não existe e isso é pulado —
-// não afeta o comportamento da página.
+// em Node via node:test, e pro server reusar (api/import.js). Em browser,
+// `module` não existe e isso é pulado — não afeta o comportamento da página.
 if (typeof module !== 'undefined') {
   module.exports = { categorizeExtrato, hashStr, ofxTag, ofxDate, parseOfxExtrato, csvDate, csvValue, parseCsvExtrato };
 }

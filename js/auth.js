@@ -172,34 +172,18 @@ function logout() {
   Object.keys(localStorage)
     .filter((k) => k.startsWith('mvf3_') && k !== 'mvf3_theme')
     .forEach((k) => localStorage.removeItem(k));
+  resetCache();
+  _statsCache = null;
   document.body.classList.remove('authed');
   authMode('login');
 }
+// Popula o cache local a partir da API: metas/investimentos/orçamentos
+// (coleções pequenas, tudo de uma vez) + o mês corrente (os demais meses são
+// buscados sob demanda por ensureMonthLoaded, ver js/state.js e js/ui.js).
 async function pullData() {
-  const { data } = await api('data', 'GET');
-  Object.keys(localStorage)
-    .filter((k) => k.startsWith('mvf3_') && !['mvf3_token', 'mvf3_user', 'mvf3_theme'].includes(k))
-    .forEach((k) => localStorage.removeItem(k));
-  Object.entries(data || {}).forEach(([k, v]) => {
-    if (k.startsWith('mvf3_')) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
-  });
+  resetCache();
+  await Promise.all([hydrateCollections(), ensureMonthLoaded(cm, cy)]);
   refreshTheme();
-}
-let _pushT = null;
-function syncPush() {
-  if (!AUTH.token) return;
-  clearTimeout(_pushT);
-  _pushT = setTimeout(async () => {
-    const data = {};
-    Object.keys(localStorage).forEach((k) => {
-      if (k.startsWith('mvf3_') && !['mvf3_token', 'mvf3_user'].includes(k)) data[k] = localStorage.getItem(k);
-    });
-    try {
-      await api('data', 'PUT', { data });
-    } catch {
-      /* sync tenta de novo na próxima alteração, sem travar a UI */
-    }
-  }, 800);
 }
 
 function showDemoBanner() {

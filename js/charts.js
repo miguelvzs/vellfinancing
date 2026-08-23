@@ -2,9 +2,7 @@ async function renderNetChart() {
   const ctx = document.getElementById('netChart');
   if (!ctx) return;
   await loadScript('/vendor/chart.umd.js');
-  const labels = [],
-    vals = [];
-  let run = 0;
+  const pairs = [];
   for (let i = 11; i >= 0; i--) {
     let m = cm - i,
       y = cy;
@@ -12,6 +10,13 @@ async function renderNetChart() {
       m += 12;
       y--;
     }
+    pairs.push([m, y]);
+  }
+  await ensureMonthsLoaded(pairs);
+  const labels = [],
+    vals = [];
+  let run = 0;
+  for (const [m, y] of pairs) {
     const d = gd(m, y);
     const inc = d.income.reduce((a, b) => a + parseFloat(b.value), 0);
     const out =
@@ -94,9 +99,7 @@ async function renderCatChart(data) {
 
 async function renderHistChart() {
   await loadScript('/vendor/chart.umd.js');
-  const months = [],
-    incs = [],
-    exps = [];
+  const pairs = [];
   for (let i = 5; i >= 0; i--) {
     let m = cm - i,
       y = cy;
@@ -104,6 +107,13 @@ async function renderHistChart() {
       m += 12;
       y--;
     }
+    pairs.push([m, y]);
+  }
+  await ensureMonthsLoaded(pairs);
+  const months = [],
+    incs = [],
+    exps = [];
+  for (const [m, y] of pairs) {
     const d = gd(m, y);
     months.push(MN[m].slice(0, 3));
     incs.push(d.income.reduce((a, b) => a + parseFloat(b.value), 0));

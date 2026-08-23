@@ -1,11 +1,20 @@
 // BACKUP / RESTORE
-function exportBackup() {
-  const dump = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k.startsWith('mvf3_')) dump[k] = localStorage.getItem(k);
+// Lê direto do servidor (GET /api/export) em vez de varrer o localStorage:
+// o cache local agora é parcial (só meses já visitados — ver js/state.js),
+// então um backup baseado nele podia sair incompleto.
+async function exportBackup() {
+  if (DEMO) return demoRO();
+  let data;
+  try {
+    const j = await api('export', 'GET');
+    data = j.data;
+  } catch (e) {
+    toast('Não foi possível gerar o backup: ' + e.message);
+    return;
   }
-  const payload = { _app: 'mvfinancing', _version: 1, _exportedAt: new Date().toISOString(), data: dump };
+  const theme = localStorage.getItem('mvf3_theme');
+  if (theme) data.mvf3_theme = theme;
+  const payload = { _app: 'mvfinancing', _version: 2, _exportedAt: new Date().toISOString(), data };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -29,7 +38,7 @@ function importBackup(input) {
     let parsed;
     try {
       parsed = JSON.parse(e.target.result);
-    } catch (err) {
+    } catch {
       toast('Arquivo inválido.');
       input.value = '';
       return;
@@ -44,12 +53,20 @@ function importBackup(input) {
     confirm2(
       'Restaurar backup',
       `Importar ${keys.length} registro(s)? Isso substitui os dados atuais correspondentes.`,
-      () => {
-        keys.forEach((k) => localStorage.setItem(k, data[k]));
-        if (data['mvf3_theme']) refreshTheme();
-        syncPush();
-        goToday();
-        toast('Backup restaurado.');
+      async () => {
+        try {
+          await api('restore', 'POST', { data });
+          if (data['mvf3_theme']) {
+            localStorage.setItem('mvf3_theme', data['mvf3_theme']);
+            refreshTheme();
+          }
+          resetCache();
+          await pullData();
+          goToday();
+          toast('Backup restaurado.');
+        } catch (err) {
+          toast('Não foi possível restaurar: ' + err.message);
+        }
       },
       false,
     );

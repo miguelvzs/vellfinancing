@@ -262,6 +262,17 @@ function searchHist(v) {
   }, 0);
 }
 
+let _statsCache = null; // populado por loadSettingsStats() (js/ui.js) via GET /api/stats
+async function loadSettingsStats() {
+  if (DEMO) return;
+  try {
+    _statsCache = await api('stats', 'GET');
+  } catch {
+    _statsCache = null;
+  }
+  if (curPage === 'settings') renderSettings();
+}
+
 function renderSettings() {
   const el = document.getElementById('setStats');
   if (!el) return;
@@ -269,15 +280,24 @@ function renderSettings() {
     inc = 0,
     exp = 0,
     bills = 0;
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (/^mvf3_\d+_\d+$/.test(k)) {
-      months++;
-      const d = JSON.parse(localStorage.getItem(k));
-      inc += d.income?.length || 0;
-      exp += d.expenses?.length || 0;
-      bills += d.bills?.length || 0;
+  if (DEMO || !_statsCache) {
+    // modo demo (sem API) ou stats ainda não carregadas: soma o que já
+    // estiver no cache local em vez de mostrar zerado.
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (/^mvf3_\d+_\d+$/.test(k)) {
+        months++;
+        const d = JSON.parse(localStorage.getItem(k));
+        inc += d.income?.length || 0;
+        exp += d.expenses?.length || 0;
+        bills += d.bills?.length || 0;
+      }
     }
+  } else {
+    months = _statsCache.months || 0;
+    inc = _statsCache.income || 0;
+    exp = _statsCache.expenses || 0;
+    bills = _statsCache.bills || 0;
   }
   el.innerHTML = `
     <div class="set-stat"><span>Meses com dados</span><span>${months}</span></div>

@@ -7,7 +7,7 @@ module.exports = [
     ignores: ['vendor/**', 'node_modules/**'],
   },
   {
-    files: ['api/**/*.js', 'lib/**/*.js', 'test/**/*.js', 'eslint.config.js'],
+    files: ['api/**/*.js', 'lib/**/*.js', 'db/**/*.js', 'scripts/**/*.js', 'test/**/*.js', 'eslint.config.js', 'drizzle.config.js'],
     languageOptions: {
       sourceType: 'commonjs',
       ecmaVersion: 2023,

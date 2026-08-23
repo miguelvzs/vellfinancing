@@ -18,6 +18,16 @@ document.querySelectorAll('.nv[data-page]').forEach((b) => {
   });
 });
 
+// Troca de mês/página pode precisar buscar dados ainda não carregados (ver
+// js/state.js: cada mês só é buscado na API na primeira vez que é visto).
+// Renderiza uma vez na hora (com o que já tiver em cache, pra não travar a
+// navegação) e de novo assim que o fetch terminar.
+async function loadCurrentMonthAndRender() {
+  render();
+  await ensureMonthLoaded(cm, cy);
+  render();
+}
+
 function showPage(id) {
   curPage = id;
   document.querySelectorAll('.page').forEach((p) => p.classList.remove('on'));
@@ -32,7 +42,8 @@ function showPage(id) {
     settings: 'Configurações',
   };
   document.getElementById('pgTitle').textContent = titles[id] || id;
-  render();
+  loadCurrentMonthAndRender();
+  if (id === 'settings') loadSettingsStats();
 }
 
 function chMon(d) {
@@ -45,12 +56,12 @@ function chMon(d) {
     cm = 11;
     cy--;
   }
-  render();
+  loadCurrentMonthAndRender();
 }
 function goToday() {
   cm = new Date().getMonth();
   cy = new Date().getFullYear();
-  render();
+  loadCurrentMonthAndRender();
 }
 
 // THEME

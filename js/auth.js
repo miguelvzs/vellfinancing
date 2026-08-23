@@ -72,7 +72,7 @@ async function doLogin() {
     return;
   }
   try {
-    const j = await api('login', 'POST', { username, password });
+    const j = await api('auth?action=login', 'POST', { username, password });
     await onAuthed(j);
   } catch (e) {
     authErr(e.message);
@@ -89,7 +89,7 @@ async function doRegister() {
     return;
   }
   try {
-    const j = await api('register', 'POST', { username, password, question, answer });
+    const j = await api('auth?action=register', 'POST', { username, password, question, answer });
     await onAuthed(j);
     toast('Conta criada com sucesso.');
   } catch (e) {
@@ -104,7 +104,7 @@ async function doForgot() {
     return;
   }
   try {
-    const j = await api('forgot', 'POST', { username });
+    const j = await api('auth?action=forgot', 'POST', { username });
     const b = document.getElementById('authBody');
     b.innerHTML = `<div class="auth-sub"><strong>${escAuth(j.question)}</strong></div>
     <input type="hidden" id="a-user" value="${escAuth(username)}">
@@ -128,7 +128,7 @@ async function doReset() {
     return;
   }
   try {
-    const j = await api('reset', 'POST', { username, answer, password });
+    const j = await api('auth?action=reset', 'POST', { username, answer, password });
     await onAuthed(j);
     toast('Senha redefinida.');
   } catch (e) {
@@ -155,7 +155,7 @@ async function changePass() {
     return;
   }
   try {
-    await api('change', 'POST', { current, password });
+    await api('auth?action=change', 'POST', { current, password });
     document.getElementById('ch-cur').value = '';
     document.getElementById('ch-new').value = '';
     toast('Senha alterada com sucesso.');

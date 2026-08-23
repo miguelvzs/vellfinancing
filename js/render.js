@@ -310,7 +310,7 @@ let _statsCache = null; // populado por loadSettingsStats() (js/ui.js) via GET /
 async function loadSettingsStats() {
   if (DEMO) return;
   try {
-    _statsCache = await api('stats', 'GET');
+    _statsCache = await api('account?action=stats', 'GET');
   } catch {
     _statsCache = null;
   }

@@ -177,7 +177,7 @@ function clearAll() {
     'Isso apaga TODOS os dados (meses, metas e investimentos) permanentemente. Recomendamos baixar um backup antes. Continuar?',
     async () => {
       try {
-        await api('clear-all', 'POST');
+        await api('account?action=clear-all', 'POST');
         resetCache();
         const keep = ['mvf3_token', 'mvf3_user', 'mvf3_theme'];
         const ks = [];

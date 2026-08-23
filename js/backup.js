@@ -6,7 +6,7 @@ async function exportBackup() {
   if (DEMO) return demoRO();
   let data;
   try {
-    const j = await api('export', 'GET');
+    const j = await api('account?action=export', 'GET');
     data = j.data;
   } catch (e) {
     toast('Não foi possível gerar o backup: ' + e.message);
@@ -55,7 +55,7 @@ function importBackup(input) {
       `Importar ${keys.length} registro(s)? Isso substitui os dados atuais correspondentes.`,
       async () => {
         try {
-          await api('restore', 'POST', { data });
+          await api('account?action=restore', 'POST', { data });
           if (data['mvf3_theme']) {
             localStorage.setItem('mvf3_theme', data['mvf3_theme']);
             refreshTheme();

@@ -393,3 +393,52 @@ async function saveModal() {
     return;
   }
 }
+
+// GESTÃO DE CATEGORIAS (§5)
+async function addCategory() {
+  if (DEMO) return demoRO();
+  const nameEl = document.getElementById('cat-new-name');
+  const kindEl = document.getElementById('cat-new-kind');
+  const name = nameEl?.value.trim();
+  if (!name) {
+    toast('Informe o nome da categoria.');
+    return;
+  }
+  try {
+    await api('categories', 'POST', { name, kind: kindEl?.value || 'expense' });
+    nameEl.value = '';
+    toast('Categoria criada.');
+    loadCategories();
+  } catch (e) {
+    toast('Não foi possível criar a categoria: ' + e.message);
+  }
+}
+async function renameCategory(id, name) {
+  if (DEMO) return demoRO();
+  name = name.trim();
+  if (!name) {
+    toast('Nome não pode ficar vazio.');
+    loadCategories();
+    return;
+  }
+  try {
+    await api('categories', 'PUT', { id, name });
+    toast('Categoria renomeada.');
+    loadCategories();
+    render();
+  } catch (e) {
+    toast('Não foi possível renomear: ' + e.message);
+  }
+}
+function deleteCategory(id) {
+  if (DEMO) return demoRO();
+  confirm2('Remover categoria', 'Lançamentos que usam essa categoria ficam sem categoria, mas não são apagados. Continuar?', async () => {
+    try {
+      await api('categories?id=' + id, 'DELETE');
+      toast('Categoria removida.');
+      loadCategories();
+    } catch (e) {
+      toast('Não foi possível remover: ' + e.message);
+    }
+  });
+}

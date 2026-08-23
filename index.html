@@ -226,6 +226,22 @@
               <div id="setStats"></div>
             </div>
             <div class="set-card">
+              <h3>Categorias</h3>
+              <p>Crie, renomeie ou remova categorias de despesa/receita. Remover uma categoria não apaga os lançamentos que a usam.</p>
+              <div id="catMgmt"></div>
+              <div class="frow" style="margin-top: 10px">
+                <div class="fld"><label>Nova categoria</label><input id="cat-new-name" placeholder="Ex: Pet, Academia..." /></div>
+                <div class="fld">
+                  <label>Tipo</label>
+                  <select id="cat-new-kind">
+                    <option value="expense">Despesa</option>
+                    <option value="income">Receita</option>
+                  </select>
+                </div>
+              </div>
+              <div class="set-acts"><button class="set-btn prim" onclick="addCategory()">+ Adicionar categoria</button></div>
+            </div>
+            <div class="set-card">
               <h3>Trocar senha</h3>
               <p>Altere a senha da sua conta. Precisa informar a senha atual.</p>
               <div class="fld"><label>Senha atual</label><input id="ch-cur" type="password" autocomplete="current-password" /></div>

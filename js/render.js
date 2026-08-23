@@ -200,6 +200,8 @@ function renderInvest() {
     .join('');
 }
 
+let _globalSearchResults = null; // populado por runGlobalSearch() — GET /api/search (cross-mês)
+
 function renderHist(data) {
   const fr = document.getElementById('fltRow');
   fr.innerHTML =
@@ -208,17 +210,34 @@ function renderHist(data) {
         const keys = ['all', 'income', 'expense', 'bill'];
         return `<button class="ftag ${hfilt === keys[i] ? 'on' : ''}" onclick="setHF('${keys[i]}')">${f}</button>`;
       })
-      .join('') + `<input class="srch" id="histSrch" placeholder="Buscar..." value="${esc(hquery)}" oninput="searchHist(this.value)">`;
+      .join('') +
+    `<input class="srch" id="histSrch" placeholder="Buscar..." value="${esc(hquery)}" oninput="searchHist(this.value)">` +
+    (DEMO
+      ? ''
+      : `<label style="font-size:11px;color:var(--mu);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap"><input type="checkbox" id="histGlobal" ${hglobal ? 'checked' : ''} onchange="toggleHGlobal(this.checked)">Todo o histórico</label>`);
   const el = document.getElementById('histList');
-  let all = [
-    ...data.income.map((i) => ({ ...i, kind: 'income' })),
-    ...data.expenses.map((e) => ({ ...e, kind: 'expense' })),
-    ...data.bills.map((b) => ({ ...b, kind: 'bill' })),
-  ];
-  if (hfilt !== 'all') all = all.filter((t) => t.kind === hfilt);
-  if (hquery.trim()) {
-    const q = hquery.trim().toLowerCase();
-    all = all.filter((t) => (t.name || '').toLowerCase().includes(q) || (t.cat || '').toLowerCase().includes(q));
+
+  let all;
+  if (hglobal && !DEMO) {
+    if (!_globalSearchResults) {
+      scheduleGlobalSearch();
+      el.innerHTML = '<div class="emp">Buscando...</div>';
+      const foot0 = document.getElementById('histFoot');
+      if (foot0) foot0.innerHTML = '';
+      return;
+    }
+    all = _globalSearchResults;
+  } else {
+    all = [
+      ...data.income.map((i) => ({ ...i, kind: 'income' })),
+      ...data.expenses.map((e) => ({ ...e, kind: 'expense' })),
+      ...data.bills.map((b) => ({ ...b, kind: 'bill' })),
+    ];
+    if (hfilt !== 'all') all = all.filter((t) => t.kind === hfilt);
+    if (hquery.trim()) {
+      const q = hquery.trim().toLowerCase();
+      all = all.filter((t) => (t.name || '').toLowerCase().includes(q) || (t.cat || '').toLowerCase().includes(q));
+    }
   }
   const foot = document.getElementById('histFoot');
   if (!all.length) {
@@ -236,7 +255,7 @@ function renderHist(data) {
     .map(
       (t) => `<div class="hist-row">
     <div class="hist-ico" style="background:${CL[t.cat] || '#6b6b72'}18">${IC2[t.cat] || '📌'}</div>
-    <div class="hist-inf"><div class="hist-n">${esc(t.name)}</div><div class="hist-m">${esc(t.cat)} · ${t.kind === 'income' ? 'Receita' : t.kind === 'expense' ? 'Despesa' : 'Conta'}${t.dueDate ? ' · ' + new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR') : ''}${t.kind === 'bill' ? (t.paid ? ' · Pago' : ' · Pendente') : ''}</div></div>
+    <div class="hist-inf"><div class="hist-n">${esc(t.name)}</div><div class="hist-m">${esc(t.cat)} · ${t.kind === 'income' ? 'Receita' : t.kind === 'expense' ? 'Despesa' : 'Conta'}${t.dueDate ? ' · ' + new Date(t.dueDate + 'T12:00:00').toLocaleDateString('pt-BR') : hglobal && t.month != null ? ' · ' + MN[t.month].slice(0, 3) + '/' + t.year : ''}${t.kind === 'bill' ? (t.paid ? ' · Pago' : ' · Pendente') : ''}</div></div>
     <div class="hist-a" style="color:${t.kind === 'income' ? 'var(--gr)' : 'var(--re)'}">${t.kind === 'income' ? '+' : '-'}${brl(t.value)}</div>
   </div>`,
     )
@@ -247,10 +266,35 @@ function renderHist(data) {
 
 function setHF(f) {
   hfilt = f;
+  _globalSearchResults = null;
   render();
+}
+function toggleHGlobal(checked) {
+  hglobal = checked;
+  _globalSearchResults = null;
+  render();
+}
+let _globalSearchTimer = null;
+function scheduleGlobalSearch() {
+  clearTimeout(_globalSearchTimer);
+  _globalSearchTimer = setTimeout(runGlobalSearch, 350); // debounce: não busca a cada tecla
+}
+async function runGlobalSearch() {
+  try {
+    const params = new URLSearchParams();
+    if (hquery.trim()) params.set('q', hquery.trim());
+    if (hfilt !== 'all') params.set('type', hfilt);
+    const j = await api('search?' + params.toString(), 'GET');
+    _globalSearchResults = j.items || [];
+  } catch {
+    _globalSearchResults = [];
+    toast('Não foi possível buscar no histórico completo.');
+  }
+  if (curPage === 'history') renderHist(gd());
 }
 function searchHist(v) {
   hquery = v;
+  _globalSearchResults = null;
   const data = gd();
   renderHist(data);
   setTimeout(() => {
@@ -271,6 +315,49 @@ async function loadSettingsStats() {
     _statsCache = null;
   }
   if (curPage === 'settings') renderSettings();
+}
+
+// Gestão de categorias (§5) — lista simples com renomear inline (input) e
+// remover; criar categoria fica no form fixo abaixo da lista (index.html).
+let _categoriesCache = null;
+async function loadCategories() {
+  if (DEMO) {
+    const el = document.getElementById('catMgmt');
+    if (el) el.innerHTML = '<div class="emp">Não disponível no modo demonstração.</div>';
+    return;
+  }
+  try {
+    const j = await api('categories', 'GET');
+    _categoriesCache = j.categories || [];
+  } catch {
+    _categoriesCache = null;
+  }
+  if (curPage === 'settings') renderCategoryMgmt();
+}
+function renderCategoryMgmt() {
+  const el = document.getElementById('catMgmt');
+  if (!el) return;
+  if (!_categoriesCache) {
+    el.innerHTML = '<div class="emp">Não foi possível carregar as categorias.</div>';
+    return;
+  }
+  if (!_categoriesCache.length) {
+    el.innerHTML = '<div class="emp">Nenhuma categoria ainda.</div>';
+    return;
+  }
+  const sorted = [..._categoriesCache].sort((a, b) => a.kind.localeCompare(b.kind) || a.name.localeCompare(b.name, 'pt-BR'));
+  el.innerHTML = sorted
+    .map(
+      (c) => `<div class="li">
+    <div class="lidot" style="background:${CL[c.name] || '#6b6b72'}"></div>
+    <div class="lii">
+      <input value="${esc(c.name)}" onchange="renameCategory(${c.id},this.value)" style="background:none;border:none;color:inherit;font-family:inherit;font-size:13px;width:100%;padding:2px 0" />
+    </div>
+    <span style="font-size:11px;color:var(--mu);white-space:nowrap">${c.kind === 'income' ? 'Receita' : 'Despesa'}</span>
+    <button class="xb" title="Remover" onclick="deleteCategory(${c.id})">&#215;</button>
+  </div>`,
+    )
+    .join('');
 }
 
 function renderSettings() {

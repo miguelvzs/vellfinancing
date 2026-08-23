@@ -55,7 +55,8 @@ let cm = new Date().getMonth(),
 let mtype = '',
   curPage = 'overview',
   hfilt = 'all',
-  hquery = '';
+  hquery = '',
+  hglobal = false; // "buscar em todo o histórico" (cross-mês, via GET /api/search) em vez de só o mês corrente
 let editId = null; // id do item em edição (null = criar novo)
 let catCI = null,
   histCI = null,

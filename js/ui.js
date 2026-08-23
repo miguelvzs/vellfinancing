@@ -43,7 +43,10 @@ function showPage(id) {
   };
   document.getElementById('pgTitle').textContent = titles[id] || id;
   loadCurrentMonthAndRender();
-  if (id === 'settings') loadSettingsStats();
+  if (id === 'settings') {
+    loadSettingsStats();
+    loadCategories();
+  }
 }
 
 function chMon(d) {

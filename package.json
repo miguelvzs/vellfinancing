@@ -7,7 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "vercel dev",
+    "dev:vercel": "vercel dev",
     "test": "node --test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

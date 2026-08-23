@@ -15,7 +15,7 @@ Controle financeiro pessoal — single user por conta, UI em pt-BR.
 npm install
 vercel env pull --yes     # baixa .env.local com DATABASE_URL, JWT_SECRET, etc. do projeto na Vercel
 npx dotenv -e .env.local -- npx drizzle-kit push   # aplica o schema no banco (1ª vez / após mudar db/schema.js)
-npm run dev                # vercel dev — roda frontend + funções serverless localmente
+npm run dev:vercel         # vercel dev — roda frontend + funções serverless localmente
 ```
 
 Sem a Vercel CLI, `index.html` + `css/` + `js/` + `vendor/` são estáticos e podem
@@ -35,7 +35,7 @@ só o modo demo (`?demo` na URL) funciona, já que ele não depende da API.
 
 | Comando                            | O que faz                                                                                                         |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                      | `vercel dev` — roda frontend + funções serverless localmente                                                      |
+| `npm run dev:vercel`               | `vercel dev` — roda frontend + funções serverless localmente                                                      |
 | `npm test`                         | Roda os testes (`node --test`) em `test/`                                                                         |
 | `npm run lint` / `lint:fix`        | ESLint                                                                                                            |
 | `npm run format` / `format:check`  | Prettier                                                                                                          |

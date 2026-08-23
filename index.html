@@ -1,245 +1,283 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MV Financing</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/styles.css">
-</head>
-<body>
-
-<div class="auth-ovl" id="authOvl">
-  <div class="auth-card">
-    <div class="auth-logo"><div class="mvb">MV</div><span>MV Financing</span></div>
-    <div class="auth-tabs">
-      <button class="atab on" id="tabLogin" onclick="authMode('login')">Entrar</button>
-      <button class="atab" id="tabReg" onclick="authMode('register')">Criar conta</button>
-    </div>
-    <div id="authBody"></div>
-    <div class="auth-err" id="authErr"></div>
-  </div>
-</div>
-
-<div class="app">
-
-<div class="scrim" id="scrim" onclick="closeSidebar()"></div>
-<aside class="sidebar" id="sidebar">
-  <div class="logo">
-    <div class="logo-row"><div class="mvb">MV</div><span class="logo-name">MV Financing</span></div>
-    <div class="logo-sub">by MV Corp</div>
-  </div>
-  <div class="nav-sect">
-    <span class="nav-lbl">Geral</span>
-    <button class="nv on" data-page="overview"><span class="ndot"></span>Visão Geral</button>
-    <button class="nv" data-page="bills"><span class="ndot"></span>A Pagar</button>
-    <button class="nv" data-page="history"><span class="ndot"></span>Histórico</button>
-  </div>
-  <div class="nav-sect" style="border-top:1px solid var(--bd)">
-    <span class="nav-lbl">Planejamento</span>
-    <button class="nv" data-page="budget"><span class="ndot"></span>Orçamento</button>
-    <button class="nv" data-page="goals"><span class="ndot"></span>Metas</button>
-    <button class="nv" data-page="invest"><span class="ndot"></span>Investimentos</button>
-  </div>
-  <div class="nav-sect" style="border-top:1px solid var(--bd)">
-    <span class="nav-lbl">Exportar</span>
-    <button class="nv" onclick="exportExcel()"><span class="ndot"></span>Planilha Excel</button>
-    <button class="nv" onclick="exportReport()"><span class="ndot"></span>Relatório Mensal</button>
-  </div>
-  <div class="nav-sect" style="border-top:1px solid var(--bd)">
-    <span class="nav-lbl">Sistema</span>
-    <button class="nv" data-page="settings"><span class="ndot"></span>Configurações</button>
-  </div>
-  <div class="sf-foot"><span class="sync-dot"></span><span id="footUser"></span><br>Sincronizado na nuvem<br><button class="logout-btn" onclick="logout()">Sair da conta</button></div>
-</aside>
-
-<main class="main">
-  <div class="page-hd">
-    <div class="hd-l">
-      <button class="burger" onclick="openSidebar()" aria-label="Menu">&#9776;</button>
-      <div><div class="pg-title" id="pgTitle">Visão Geral</div><div class="pg-sub" id="pgSub"></div></div>
-    </div>
-    <div class="hd-acts">
-      <button class="today-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">&#9728;</button>
-      <button class="today-btn" id="todayBtn" onclick="goToday()">Hoje</button>
-      <div class="mnav">
-        <button onclick="chMon(-1)" aria-label="Mês anterior">&#8249;</button>
-        <span id="monLabel"></span>
-        <button onclick="chMon(1)" aria-label="Próximo mês">&#8250;</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- OVERVIEW -->
-  <div id="page-overview" class="page on">
-    <div class="sal">
-      <span class="sal-lbl">Renda mensal</span>
-      <div class="sal-sep"></div>
-      <input type="number" id="salIn" placeholder="0,00" step="0.01" onkeydown="if(event.key==='Enter')setSalary()">
-      <span class="sal-ok" id="salOk">&#10003; Salvo</span>
-      <button onclick="setSalary()">Salvar</button>
-    </div>
-    <div class="sum" id="sumCards"></div>
-    <div class="net" id="netStrip"></div>
-    <div class="ov-grid">
-      <div class="ov-lists">
-        <div class="div-r">
-          <div class="panel-hd"><span class="panel-title">Receitas</span><button class="adbtn" onclick="openModal('income')">+ Adicionar</button></div>
-          <div id="incList"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MV Financing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Mono:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <div class="auth-ovl" id="authOvl">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="mvb">MV</div>
+          <span>MV Financing</span>
         </div>
-        <div>
-          <div class="panel-hd"><span class="panel-title">Despesas</span><button class="adbtn" onclick="openModal('expense')">+ Adicionar</button></div>
-          <div id="expList"></div>
+        <div class="auth-tabs">
+          <button class="atab on" id="tabLogin" onclick="authMode('login')">Entrar</button>
+          <button class="atab" id="tabReg" onclick="authMode('register')">Criar conta</button>
+        </div>
+        <div id="authBody"></div>
+        <div class="auth-err" id="authErr"></div>
+      </div>
+    </div>
+
+    <div class="app">
+      <div class="scrim" id="scrim" onclick="closeSidebar()"></div>
+      <aside class="sidebar" id="sidebar">
+        <div class="logo">
+          <div class="logo-row">
+            <div class="mvb">MV</div>
+            <span class="logo-name">MV Financing</span>
+          </div>
+          <div class="logo-sub">by MV Corp</div>
+        </div>
+        <div class="nav-sect">
+          <span class="nav-lbl">Geral</span>
+          <button class="nv on" data-page="overview"><span class="ndot"></span>Visão Geral</button>
+          <button class="nv" data-page="bills"><span class="ndot"></span>A Pagar</button>
+          <button class="nv" data-page="history"><span class="ndot"></span>Histórico</button>
+        </div>
+        <div class="nav-sect" style="border-top: 1px solid var(--bd)">
+          <span class="nav-lbl">Planejamento</span>
+          <button class="nv" data-page="budget"><span class="ndot"></span>Orçamento</button>
+          <button class="nv" data-page="goals"><span class="ndot"></span>Metas</button>
+          <button class="nv" data-page="invest"><span class="ndot"></span>Investimentos</button>
+        </div>
+        <div class="nav-sect" style="border-top: 1px solid var(--bd)">
+          <span class="nav-lbl">Exportar</span>
+          <button class="nv" onclick="exportExcel()"><span class="ndot"></span>Planilha Excel</button>
+          <button class="nv" onclick="exportReport()"><span class="ndot"></span>Relatório Mensal</button>
+        </div>
+        <div class="nav-sect" style="border-top: 1px solid var(--bd)">
+          <span class="nav-lbl">Sistema</span>
+          <button class="nv" data-page="settings"><span class="ndot"></span>Configurações</button>
+        </div>
+        <div class="sf-foot">
+          <span class="sync-dot"></span><span id="footUser"></span><br />Sincronizado na nuvem<br /><button
+            class="logout-btn"
+            onclick="logout()"
+          >
+            Sair da conta
+          </button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="page-hd">
+          <div class="hd-l">
+            <button class="burger" onclick="openSidebar()" aria-label="Menu">&#9776;</button>
+            <div>
+              <div class="pg-title" id="pgTitle">Visão Geral</div>
+              <div class="pg-sub" id="pgSub"></div>
+            </div>
+          </div>
+          <div class="hd-acts">
+            <button class="today-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">&#9728;</button>
+            <button class="today-btn" id="todayBtn" onclick="goToday()">Hoje</button>
+            <div class="mnav">
+              <button onclick="chMon(-1)" aria-label="Mês anterior">&#8249;</button>
+              <span id="monLabel"></span>
+              <button onclick="chMon(1)" aria-label="Próximo mês">&#8250;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OVERVIEW -->
+        <div id="page-overview" class="page on">
+          <div class="sal">
+            <span class="sal-lbl">Renda mensal</span>
+            <div class="sal-sep"></div>
+            <input type="number" id="salIn" placeholder="0,00" step="0.01" onkeydown="if (event.key === 'Enter') setSalary();" />
+            <span class="sal-ok" id="salOk">&#10003; Salvo</span>
+            <button onclick="setSalary()">Salvar</button>
+          </div>
+          <div class="sum" id="sumCards"></div>
+          <div class="net" id="netStrip"></div>
+          <div class="ov-grid">
+            <div class="ov-lists">
+              <div class="div-r">
+                <div class="panel-hd">
+                  <span class="panel-title">Receitas</span><button class="adbtn" onclick="openModal('income')">+ Adicionar</button>
+                </div>
+                <div id="incList"></div>
+              </div>
+              <div>
+                <div class="panel-hd">
+                  <span class="panel-title">Despesas</span><button class="adbtn" onclick="openModal('expense')">+ Adicionar</button>
+                </div>
+                <div id="expList"></div>
+              </div>
+            </div>
+            <div class="ov-chart panel">
+              <div class="panel-hd"><span class="panel-title">Por categoria</span></div>
+              <div class="chart-wrap" style="flex: 1; min-height: 210px"><canvas id="catChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BILLS -->
+        <div id="page-bills" class="page">
+          <div class="sum" id="billSum" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 15px"></div>
+          <div class="panel">
+            <div class="panel-hd">
+              <span class="panel-title">Contas do mês</span><button class="adbtn" onclick="openModal('bill')">+ Nova conta</button>
+            </div>
+            <div id="billsList"></div>
+          </div>
+        </div>
+
+        <!-- BUDGET -->
+        <div id="page-budget" class="page">
+          <div class="sum" id="budgetSum" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 15px"></div>
+          <div class="panel">
+            <div class="panel-hd">
+              <span class="panel-title">Orçamento por categoria</span
+              ><span style="font-size: 11px; color: var(--mu)">Defina um limite mensal e acompanhe o gasto</span>
+            </div>
+            <div id="budgetList"></div>
+          </div>
+        </div>
+
+        <!-- GOALS -->
+        <div id="page-goals" class="page">
+          <div class="panel">
+            <div class="panel-hd">
+              <span class="panel-title">Metas de economia</span><button class="adbtn" onclick="openModal('goal')">+ Nova meta</button>
+            </div>
+            <div id="goalsList"></div>
+          </div>
+        </div>
+
+        <!-- INVEST -->
+        <div id="page-invest" class="page">
+          <div class="inv-sum" id="invSum"></div>
+          <div class="panel" style="margin-bottom: 13px">
+            <div class="panel-hd">
+              <span class="panel-title">Carteira</span><button class="adbtn" onclick="openModal('invest')">+ Adicionar ativo</button>
+            </div>
+            <div id="invList"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd"><span class="panel-title">Distribuição por tipo</span></div>
+            <div class="chart-wrap" style="height: 200px"><canvas id="invChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div id="page-history" class="page">
+          <div class="panel" style="margin-bottom: 13px">
+            <div class="panel-hd"><span class="panel-title">Patrimônio — saldo acumulado (12 meses)</span></div>
+            <div class="chart-wrap" style="height: 190px"><canvas id="netChart"></canvas></div>
+          </div>
+          <div class="panel" style="margin-bottom: 13px">
+            <div class="panel-hd"><span class="panel-title">Receita vs. Gastos — 6 meses</span></div>
+            <div class="chart-wrap" style="height: 190px"><canvas id="histChart"></canvas></div>
+          </div>
+          <div class="panel">
+            <div class="panel-hd"><span class="panel-title">Movimentações</span></div>
+            <div class="flt-row" id="fltRow"></div>
+            <div id="histList"></div>
+            <div class="hist-foot" id="histFoot"></div>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="page-settings" class="page">
+          <div class="set-grid">
+            <div class="set-card">
+              <h3>Backup dos dados</h3>
+              <p>
+                Seus dados ficam só neste navegador. Baixe um backup com regularidade para não perder nada se limpar o histórico ou trocar
+                de dispositivo.
+              </p>
+              <div class="set-acts">
+                <button class="set-btn prim" onclick="exportBackup()">Baixar backup (.json)</button>
+              </div>
+            </div>
+            <div class="set-card">
+              <h3>Restaurar backup</h3>
+              <p>Importe um arquivo de backup exportado anteriormente. Isso substitui os dados atuais pelos do arquivo.</p>
+              <div class="set-acts">
+                <button class="set-btn" onclick="document.getElementById('importFile').click()">Selecionar arquivo</button>
+                <input type="file" id="importFile" accept="application/json,.json" style="display: none" onchange="importBackup(this)" />
+              </div>
+            </div>
+            <div class="set-card">
+              <h3>Importar extrato bancário</h3>
+              <p>
+                Envie um arquivo .ofx ou .csv do seu banco. As transações são lidas, categorizadas automaticamente e lançadas no mês
+                correto. Reenviar o mesmo extrato não duplica nada.
+              </p>
+              <div class="set-acts">
+                <button class="set-btn prim" onclick="document.getElementById('extratoFile').click()">
+                  Selecionar extrato (.ofx/.csv)
+                </button>
+                <input type="file" id="extratoFile" accept=".ofx,.csv" style="display: none" onchange="importExtrato(this)" />
+              </div>
+            </div>
+            <div class="set-card">
+              <h3>Resumo dos dados</h3>
+              <div id="setStats"></div>
+            </div>
+            <div class="set-card">
+              <h3>Trocar senha</h3>
+              <p>Altere a senha da sua conta. Precisa informar a senha atual.</p>
+              <div class="fld"><label>Senha atual</label><input id="ch-cur" type="password" autocomplete="current-password" /></div>
+              <div class="fld"><label>Nova senha (mín. 6)</label><input id="ch-new" type="password" autocomplete="new-password" /></div>
+              <div class="set-acts"><button class="set-btn prim" onclick="changePass()">Salvar nova senha</button></div>
+            </div>
+            <div class="set-card">
+              <h3>Zona de perigo</h3>
+              <p>Ações abaixo são irreversíveis. Exporte um backup antes.</p>
+              <div class="set-acts">
+                <button class="set-btn danger" onclick="clearMonth()">Limpar mês atual</button>
+                <button class="set-btn danger" onclick="clearAll()">Apagar tudo</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="ovl" id="ovl">
+      <div class="modal">
+        <div class="modal-title" id="mTitle"></div>
+        <div id="mBody"></div>
+        <div class="modal-acts">
+          <button class="mcnl" onclick="closeModal()">Cancelar</button>
+          <button class="msave" id="mSaveBtn" onclick="saveModal()">Salvar</button>
         </div>
       </div>
-      <div class="ov-chart panel">
-        <div class="panel-hd"><span class="panel-title">Por categoria</span></div>
-        <div class="chart-wrap" style="flex:1;min-height:210px"><canvas id="catChart"></canvas></div>
-      </div>
     </div>
-  </div>
 
-  <!-- BILLS -->
-  <div id="page-bills" class="page">
-    <div class="sum" id="billSum" style="grid-template-columns:repeat(3,1fr);margin-bottom:15px"></div>
-    <div class="panel">
-      <div class="panel-hd"><span class="panel-title">Contas do mês</span><button class="adbtn" onclick="openModal('bill')">+ Nova conta</button></div>
-      <div id="billsList"></div>
-    </div>
-  </div>
-
-  <!-- BUDGET -->
-  <div id="page-budget" class="page">
-    <div class="sum" id="budgetSum" style="grid-template-columns:repeat(3,1fr);margin-bottom:15px"></div>
-    <div class="panel">
-      <div class="panel-hd"><span class="panel-title">Orçamento por categoria</span><span style="font-size:11px;color:var(--mu)">Defina um limite mensal e acompanhe o gasto</span></div>
-      <div id="budgetList"></div>
-    </div>
-  </div>
-
-  <!-- GOALS -->
-  <div id="page-goals" class="page">
-    <div class="panel">
-      <div class="panel-hd"><span class="panel-title">Metas de economia</span><button class="adbtn" onclick="openModal('goal')">+ Nova meta</button></div>
-      <div id="goalsList"></div>
-    </div>
-  </div>
-
-  <!-- INVEST -->
-  <div id="page-invest" class="page">
-    <div class="inv-sum" id="invSum"></div>
-    <div class="panel" style="margin-bottom:13px">
-      <div class="panel-hd"><span class="panel-title">Carteira</span><button class="adbtn" onclick="openModal('invest')">+ Adicionar ativo</button></div>
-      <div id="invList"></div>
-    </div>
-    <div class="panel">
-      <div class="panel-hd"><span class="panel-title">Distribuição por tipo</span></div>
-      <div class="chart-wrap" style="height:200px"><canvas id="invChart"></canvas></div>
-    </div>
-  </div>
-
-  <!-- HISTORY -->
-  <div id="page-history" class="page">
-    <div class="panel" style="margin-bottom:13px">
-      <div class="panel-hd"><span class="panel-title">Patrimônio — saldo acumulado (12 meses)</span></div>
-      <div class="chart-wrap" style="height:190px"><canvas id="netChart"></canvas></div>
-    </div>
-    <div class="panel" style="margin-bottom:13px">
-      <div class="panel-hd"><span class="panel-title">Receita vs. Gastos — 6 meses</span></div>
-      <div class="chart-wrap" style="height:190px"><canvas id="histChart"></canvas></div>
-    </div>
-    <div class="panel">
-      <div class="panel-hd"><span class="panel-title">Movimentações</span></div>
-      <div class="flt-row" id="fltRow"></div>
-      <div id="histList"></div>
-      <div class="hist-foot" id="histFoot"></div>
-    </div>
-  </div>
-
-  <!-- SETTINGS -->
-  <div id="page-settings" class="page">
-    <div class="set-grid">
-      <div class="set-card">
-        <h3>Backup dos dados</h3>
-        <p>Seus dados ficam só neste navegador. Baixe um backup com regularidade para não perder nada se limpar o histórico ou trocar de dispositivo.</p>
-        <div class="set-acts">
-          <button class="set-btn prim" onclick="exportBackup()">Baixar backup (.json)</button>
-        </div>
-      </div>
-      <div class="set-card">
-        <h3>Restaurar backup</h3>
-        <p>Importe um arquivo de backup exportado anteriormente. Isso substitui os dados atuais pelos do arquivo.</p>
-        <div class="set-acts">
-          <button class="set-btn" onclick="document.getElementById('importFile').click()">Selecionar arquivo</button>
-          <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="importBackup(this)">
-        </div>
-      </div>
-      <div class="set-card">
-        <h3>Importar extrato bancário</h3>
-        <p>Envie um arquivo .ofx ou .csv do seu banco. As transações são lidas, categorizadas automaticamente e lançadas no mês correto. Reenviar o mesmo extrato não duplica nada.</p>
-        <div class="set-acts">
-          <button class="set-btn prim" onclick="document.getElementById('extratoFile').click()">Selecionar extrato (.ofx/.csv)</button>
-          <input type="file" id="extratoFile" accept=".ofx,.csv" style="display:none" onchange="importExtrato(this)">
-        </div>
-      </div>
-      <div class="set-card">
-        <h3>Resumo dos dados</h3>
-        <div id="setStats"></div>
-      </div>
-      <div class="set-card">
-        <h3>Trocar senha</h3>
-        <p>Altere a senha da sua conta. Precisa informar a senha atual.</p>
-        <div class="fld"><label>Senha atual</label><input id="ch-cur" type="password" autocomplete="current-password"></div>
-        <div class="fld"><label>Nova senha (mín. 6)</label><input id="ch-new" type="password" autocomplete="new-password"></div>
-        <div class="set-acts"><button class="set-btn prim" onclick="changePass()">Salvar nova senha</button></div>
-      </div>
-      <div class="set-card">
-        <h3>Zona de perigo</h3>
-        <p>Ações abaixo são irreversíveis. Exporte um backup antes.</p>
-        <div class="set-acts">
-          <button class="set-btn danger" onclick="clearMonth()">Limpar mês atual</button>
-          <button class="set-btn danger" onclick="clearAll()">Apagar tudo</button>
+    <div class="ovl" id="confOvl">
+      <div class="modal" style="width: 340px">
+        <div class="modal-title" id="confTitle">Confirmar</div>
+        <div id="confMsg" style="font-size: 13px; color: var(--mu); line-height: 1.6"></div>
+        <div class="modal-acts">
+          <button class="mcnl" onclick="closeConf()">Cancelar</button>
+          <button class="msave danger" id="confYes">Confirmar</button>
         </div>
       </div>
     </div>
-  </div>
-</main>
-</div>
 
-<div class="ovl" id="ovl">
-  <div class="modal">
-    <div class="modal-title" id="mTitle"></div>
-    <div id="mBody"></div>
-    <div class="modal-acts">
-      <button class="mcnl" onclick="closeModal()">Cancelar</button>
-      <button class="msave" id="mSaveBtn" onclick="saveModal()">Salvar</button>
-    </div>
-  </div>
-</div>
+    <div class="toast" id="toast"></div>
 
-<div class="ovl" id="confOvl">
-  <div class="modal" style="width:340px">
-    <div class="modal-title" id="confTitle">Confirmar</div>
-    <div id="confMsg" style="font-size:13px;color:var(--mu);line-height:1.6"></div>
-    <div class="modal-acts">
-      <button class="mcnl" onclick="closeConf()">Cancelar</button>
-      <button class="msave danger" id="confYes">Confirmar</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script src="/js/loader.js"></script>
-<script src="/js/state.js"></script>
-<script src="/js/ui.js"></script>
-<script src="/js/render.js"></script>
-<script src="/js/charts.js"></script>
-<script src="/js/actions.js"></script>
-<script src="/js/export.js"></script>
-<script src="/js/backup.js"></script>
-<script src="/js/extrato.js"></script>
-<script src="/js/auth.js"></script>
-</body>
+    <script src="/js/loader.js"></script>
+    <script src="/js/state.js"></script>
+    <script src="/js/ui.js"></script>
+    <script src="/js/render.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/actions.js"></script>
+    <script src="/js/export.js"></script>
+    <script src="/js/backup.js"></script>
+    <script src="/js/extrato.js"></script>
+    <script src="/js/auth.js"></script>
+  </body>
 </html>

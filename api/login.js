@@ -3,7 +3,11 @@ const { kv, sign, readBody, norm, rateLimit, timingSafeCompare } = require('../l
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido.' });
   let body;
-  try { body = await readBody(req); } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
+  try {
+    body = await readBody(req);
+  } catch (e) {
+    return res.status(e.status || 400).json({ error: e.message });
+  }
   const { username, password } = body;
   const u = norm(username);
 

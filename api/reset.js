@@ -7,7 +7,11 @@ const { kv, sign, readBody, norm, rateLimit, timingSafeCompare } = require('../l
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido.' });
   let body;
-  try { body = await readBody(req); } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
+  try {
+    body = await readBody(req);
+  } catch (e) {
+    return res.status(e.status || 400).json({ error: e.message });
+  }
   const { answer, password } = body;
   const u = norm(body.username);
 
@@ -17,7 +21,8 @@ module.exports = async (req, res) => {
   const rec = await kv.get('user:' + u);
   const ok = await timingSafeCompare(norm(answer), rec && rec.ansHash);
   if (!rec || !ok) return res.status(401).json({ error: 'Usuário ou resposta de segurança inválidos.' });
-  if (String(password || '').length < 6 || String(password || '').length > 128) return res.status(400).json({ error: 'Nova senha precisa ter entre 6 e 128 caracteres.' });
+  if (String(password || '').length < 6 || String(password || '').length > 128)
+    return res.status(400).json({ error: 'Nova senha precisa ter entre 6 e 128 caracteres.' });
   rec.passHash = await bcrypt.hash(String(password), 10);
   await kv.set('user:' + u, rec);
   return res.status(200).json({ token: sign(u), username: u });

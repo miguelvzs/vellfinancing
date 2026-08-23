@@ -35,7 +35,11 @@ module.exports = async (req, res) => {
   }
   if (req.method === 'PUT' || req.method === 'POST') {
     let body;
-    try { body = await readBody(req, MAX_TOTAL_BYTES + 16 * 1024); } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
+    try {
+      body = await readBody(req, MAX_TOTAL_BYTES + 16 * 1024);
+    } catch (e) {
+      return res.status(e.status || 400).json({ error: e.message });
+    }
     const data = body && typeof body.data === 'object' && body.data ? body.data : {};
     const err = validateData(data);
     if (err) return res.status(400).json({ error: err });

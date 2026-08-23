@@ -20,7 +20,11 @@ function fakeQuestionFor(u) {
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido.' });
   let body;
-  try { body = await readBody(req); } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
+  try {
+    body = await readBody(req);
+  } catch (e) {
+    return res.status(e.status || 400).json({ error: e.message });
+  }
   const u = norm(body.username);
   if (!u) return res.status(400).json({ error: 'Informe o usuário.' });
 

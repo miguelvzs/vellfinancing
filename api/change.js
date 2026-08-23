@@ -11,13 +11,18 @@ module.exports = async (req, res) => {
   if (!allowed) return res.status(429).json({ error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' });
 
   let body;
-  try { body = await readBody(req); } catch (e) { return res.status(e.status || 400).json({ error: e.message }); }
+  try {
+    body = await readBody(req);
+  } catch (e) {
+    return res.status(e.status || 400).json({ error: e.message });
+  }
   const { current, password } = body;
   const rec = await kv.get('user:' + auth.u);
   if (!rec) return res.status(404).json({ error: 'Usuário não encontrado.' });
   const ok = await bcrypt.compare(String(current || ''), rec.passHash);
   if (!ok) return res.status(401).json({ error: 'Senha atual incorreta.' });
-  if (String(password || '').length < 6 || String(password || '').length > 128) return res.status(400).json({ error: 'Nova senha precisa ter entre 6 e 128 caracteres.' });
+  if (String(password || '').length < 6 || String(password || '').length > 128)
+    return res.status(400).json({ error: 'Nova senha precisa ter entre 6 e 128 caracteres.' });
   rec.passHash = await bcrypt.hash(String(password), 10);
   await kv.set('user:' + auth.u, rec);
   return res.status(200).json({ ok: true });

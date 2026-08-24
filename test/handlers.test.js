@@ -1,7 +1,9 @@
-// index.html usa atributos onclick/onchange/oninput/onkeydown apontando pra
-// funções globais definidas em js/*.js (scripts clássicos, ver commit de
-// split do monólito). Isso não é verificável por bundler nem por ESLint
-// (ver eslint.config.js) — então garantimos aqui que todo handler referenciado
+// index.html (e templates dinâmicos em js/render.js, js/auth.js) usam
+// atributos data-click/data-change/data-input/data-keydown apontando pra
+// funções globais definidas em js/*.js, despachados por js/bind.js (o CSP em
+// vercel.json bloqueia onclick="..." inline, ver commit que trocou pra esse
+// padrão). Isso não é verificável por bundler nem por ESLint (ver
+// eslint.config.js) — então garantimos aqui que todo handler referenciado
 // realmente existe como `function nome(` ou `const nome =` em algum js/*.js.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
@@ -15,19 +17,18 @@ function readAll(files) {
   return files.map((f) => fs.readFileSync(f, 'utf8')).join('\n');
 }
 
-test('toda função referenciada em onclick/onchange/oninput/onkeydown existe em js/*.js', () => {
+test('toda função referenciada em data-click/data-change/data-input/data-keydown existe em js/*.js', () => {
   const jsFiles = fs.readdirSync(JS_DIR).map((f) => path.join(JS_DIR, f));
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const jsSource = readAll(jsFiles);
   const all = html + '\n' + jsSource;
 
-  const handlerRe = /on(?:click|change|input|keydown)="([a-zA-Z_][a-zA-Z0-9_.]*)\(/g;
+  const handlerRe = /data-(?:click|change|input|keydown)=(?:"|')([a-zA-Z_][a-zA-Z0-9_.]*)(?:"|')/g;
   const called = new Set();
   let m;
   while ((m = handlerRe.exec(all))) {
     const name = m[1];
-    if (name.includes('.')) continue; // ex: document.getElementById(...) — não é handler nosso
-    if (name === 'if') continue; // onkeydown="if(event.key==='Enter')..."
+    if (name.includes('.')) continue; // ex: um valor de data-*-args, não handler
     called.add(name);
   }
   assert.ok(called.size > 0, 'nenhum handler encontrado — regex desatualizada?');

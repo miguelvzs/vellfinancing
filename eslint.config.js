@@ -17,8 +17,9 @@ module.exports = [
   {
     // js/*.js são scripts clássicos que compartilham um único escopo global
     // no browser (ver commit de split do index.html) e boa parte das funções
-    // só é "usada" via atributo onclick="..." em string de template — o que
-    // o ESLint não enxerga. no-undef/no-unused-vars dariam falso positivo
+    // só é "usada" via atributo data-click="..." (despachado por js/bind.js,
+    // ver commit que trocou onclick inline por esse padrão pra respeitar o
+    // CSP) em string de template — o que o ESLint não enxerga. no-undef/no-unused-vars dariam falso positivo
     // constante nesse padrão, então ficam desligadas aqui; a checagem real
     // de que todo handler existe é feita por script em test/.
     files: ['js/**/*.js'],

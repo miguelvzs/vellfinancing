@@ -25,6 +25,9 @@ async function exportBackup() {
   URL.revokeObjectURL(a.href);
   toast('Backup baixado com sucesso.');
 }
+function pickImportFile() {
+  document.getElementById('importFile').click();
+}
 function importBackup(input) {
   if (DEMO) {
     demoRO();

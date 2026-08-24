@@ -41,19 +41,19 @@ function authMode(m) {
   if (m === 'login') {
     b.innerHTML = `<div class="fld"><label>Usuário</label><input id="a-user" autocomplete="username"></div>
     <div class="fld"><label>Senha</label><input id="a-pass" type="password" autocomplete="current-password"></div>
-    <button class="auth-btn" onclick="doLogin()">Entrar</button>
-    <button class="auth-link" onclick="authMode('forgot')">Esqueci minha senha</button>`;
+    <button class="auth-btn" data-click="doLogin">Entrar</button>
+    <button class="auth-link" data-click="authMode" data-click-args='["forgot"]'>Esqueci minha senha</button>`;
   } else if (m === 'register') {
     b.innerHTML = `<div class="fld"><label>Usuário</label><input id="a-user" autocomplete="username"></div>
     <div class="fld"><label>Senha (mín. 6)</label><input id="a-pass" type="password" autocomplete="new-password"></div>
     <div class="fld"><label>Pergunta de segurança</label><input id="a-q" placeholder="Ex: Nome do meu primeiro pet?"></div>
     <div class="fld"><label>Resposta</label><input id="a-a"></div>
-    <button class="auth-btn" onclick="doRegister()">Criar conta</button>`;
+    <button class="auth-btn" data-click="doRegister">Criar conta</button>`;
   } else if (m === 'forgot') {
     b.innerHTML = `<div class="auth-sub">Informe seu usuário para ver a pergunta de segurança.</div>
     <div class="fld"><label>Usuário</label><input id="a-user"></div>
-    <button class="auth-btn" onclick="doForgot()">Continuar</button>
-    <button class="auth-link" onclick="authMode('login')">Voltar ao login</button>`;
+    <button class="auth-btn" data-click="doForgot">Continuar</button>
+    <button class="auth-link" data-click="authMode" data-click-args='["login"]'>Voltar ao login</button>`;
   }
   bindEnter();
   setTimeout(() => document.getElementById('a-user')?.focus(), 50);
@@ -117,8 +117,8 @@ async function doForgot() {
     <input type="hidden" id="a-user" value="${escAuth(username)}">
     <div class="fld"><label>Resposta de segurança</label><input id="a-a"></div>
     <div class="fld"><label>Nova senha (mín. 6)</label><input id="a-pass" type="password"></div>
-    <button class="auth-btn" onclick="doReset()">Redefinir senha</button>
-    <button class="auth-link" onclick="authMode('login')">Voltar ao login</button>`;
+    <button class="auth-btn" data-click="doReset">Redefinir senha</button>
+    <button class="auth-link" data-click="authMode" data-click-args='["login"]'>Voltar ao login</button>`;
     bindEnter();
     setTimeout(() => document.getElementById('a-a')?.focus(), 50);
   } catch (e) {

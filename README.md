@@ -30,6 +30,17 @@ só o modo demo (`?demo` na URL) funciona, já que ele não depende da API.
 | `JWT_SECRET`                                          | Sim em produção      | Segredo pra assinar/verificar tokens JWT. Sem ela, `lib/auth.js` recusa assinar/verificar tokens em produção (`VERCEL_ENV=production` ou `NODE_ENV=production`); fora de produção cai num valor de desenvolvimento inseguro só pra não travar o `vercel dev` local. |
 | `KV_REST_API_URL` / `KV_REST_API_TOKEN`               | Sim (rate limiting)  | Credenciais do KV/Upstash Redis, usado só pra contadores de rate limit (login/register/forgot/reset/change) — não guarda mais dado financeiro nem credencial de usuário.                                                                                            |
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Alternativa às acima | Mesma coisa, nome das variáveis quando o KV vem de uma integração Upstash direto do Marketplace.                                                                                                                                                                    |
+| `GOOGLE_CLIENT_ID`                                    | Só pra login Google  | Client ID OAuth do Google usado pra validar o token no backend (`api/auth.js`, action `google`). Sem ela, login com Google responde 500. Ver "Login com Google" abaixo pra como criar.                                                                              |
+
+### Login com Google
+
+Não é uma integração do Vercel Marketplace — precisa ser criada manualmente no Google Cloud Console (passo humano, não automatizável):
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services → Credentials → Create Credentials → OAuth client ID** → tipo **Web application**.
+2. Em **Authorized JavaScript origins**, adicione a URL do app (ex: `https://seu-app.vercel.app` e `http://localhost:3000` pra dev local).
+3. Copie o **Client ID** gerado (não precisa do Client Secret — o fluxo usado é Google Identity Services com ID token, verificado no backend).
+4. Backend: `vercel env add GOOGLE_CLIENT_ID` (ou direto no dashboard) com esse valor.
+5. Frontend: cole o mesmo Client ID em `GOOGLE_CLIENT_ID` no topo de `js/auth.js` (é público, não é segredo — só precisa bater com o do backend). Sem isso, o botão "Entrar com Google" não aparece.
 
 ## Scripts
 

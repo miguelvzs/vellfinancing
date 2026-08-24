@@ -27,9 +27,16 @@ function setTab(m) {
   document.getElementById('tabReg').classList.toggle('on', m === 'register');
 }
 
+// Substitua pelo Client ID OAuth criado no Google Cloud Console (Credentials
+// > OAuth client ID > Web application) — é público, não é segredo, mas
+// precisa bater com GOOGLE_CLIENT_ID do backend (ver README.md).
+const GOOGLE_CLIENT_ID = '';
+
 function authMode(m) {
   authErr('');
   if (m === 'login' || m === 'register') setTab(m);
+  const gw = document.getElementById('authGoogleWrap');
+  if (gw) gw.style.display = m === 'forgot' ? 'none' : '';
   const b = document.getElementById('authBody');
   if (m === 'login') {
     b.innerHTML = `<div class="fld"><label>Usuário</label><input id="a-user" autocomplete="username"></div>
@@ -136,6 +143,22 @@ async function doReset() {
   }
 }
 
+async function handleGoogleCredential(resp) {
+  authErr('');
+  try {
+    const j = await api('auth?action=google', 'POST', { credential: resp.credential });
+    await onAuthed(j);
+  } catch (e) {
+    authErr(e.message);
+  }
+}
+function initGoogleButton() {
+  if (!GOOGLE_CLIENT_ID || typeof google === 'undefined') return;
+  google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleCredential });
+  const el = document.getElementById('gBtn');
+  if (el) google.accounts.id.renderButton(el, { theme: 'outline', size: 'large', width: 280, locale: 'pt-BR' });
+}
+
 async function onAuthed(j) {
   AUTH.token = j.token;
   AUTH.user = j.username;
@@ -203,6 +226,10 @@ async function boot() {
     render();
     return;
   }
+  if (GOOGLE_CLIENT_ID)
+    loadScript('https://accounts.google.com/gsi/client')
+      .then(initGoogleButton)
+      .catch(() => {});
   authMode('login');
   if (AUTH.token) {
     try {

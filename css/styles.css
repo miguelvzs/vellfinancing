@@ -154,6 +154,27 @@ body.authed .auth-ovl {
 .auth-link:hover {
   text-decoration: underline;
 }
+.auth-google-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.auth-sep {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--mu);
+  font-size: 11px;
+}
+.auth-sep::before,
+.auth-sep::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--bd);
+}
 .auth-err {
   font-size: 12px;
   color: var(--re);

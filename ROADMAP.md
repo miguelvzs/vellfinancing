@@ -1,4 +1,4 @@
-# Roadmap — MV Financing rumo a plataforma profissional
+# Roadmap — Vell Financing rumo a plataforma profissional
 
 Este documento registra as decisões tomadas durante a rodada de melhoria
 descrita em `IMPROVE.md`, o porquê de cada uma, e o que ainda falta. Vai

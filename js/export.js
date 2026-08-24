@@ -20,7 +20,7 @@ async function exportExcel() {
   XLSX.utils.book_append_sheet(
     wb,
     XLSX.utils.aoa_to_sheet([
-      ['MV Financing — Relatório Mensal'],
+      ['Vell Financing — Relatório Mensal'],
       ['Mês', MN[cm] + ' ' + cy],
       [''],
       ['RESUMO'],
@@ -121,7 +121,7 @@ function exportReport() {
   .pfl{height:100%;background:#111;border-radius:2px}
   .foot{margin-top:40px;padding-top:14px;border-top:1px solid #eee;font-size:11px;color:#999;display:flex;justify-content:space-between}
   @media print{body{padding:24px}}</style></head><body>
-  <div class="brand">MV Financing · by MV Corp</div>
+  <div class="brand">Vell Financing · by <a href="https://velldigital.vercel.app" target="_blank" rel="noopener noreferrer" style="color:inherit">Vell</a></div>
   <h1>Relatório Mensal</h1><div class="sub">${MN[cm]} de ${cy}</div>
   <div class="grid">
     <div class="card"><div class="cl">Receita Total</div><div class="cv g">${brl(inc)}</div></div>
@@ -171,7 +171,7 @@ function exportReport() {
           .join('')}`
       : ''
   }
-  <div class="foot"><span>MV Financing · by MV Corp</span><span>Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span></div>
+  <div class="foot"><span>Vell Financing · by <a href="https://velldigital.vercel.app" target="_blank" rel="noopener noreferrer" style="color:inherit">Vell</a></span><span>Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span></div>
   <script>window.onload=()=>{window.print();}</script></body></html>`;
   const w = window.open('', '_blank');
   w.document.write(html);

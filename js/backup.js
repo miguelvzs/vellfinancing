@@ -14,11 +14,11 @@ async function exportBackup() {
   }
   const theme = localStorage.getItem('mvf3_theme');
   if (theme) data.mvf3_theme = theme;
-  const payload = { _app: 'mvfinancing', _version: 2, _exportedAt: new Date().toISOString(), data };
+  const payload = { _app: 'vellfinancing', _version: 2, _exportedAt: new Date().toISOString(), data };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `mvfinancing_backup_${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `vellfinancing_backup_${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -49,7 +49,7 @@ function importBackup(input) {
     const data = parsed.data || parsed;
     const keys = Object.keys(data).filter((k) => k.startsWith('mvf3_'));
     if (!keys.length) {
-      toast('Nenhum dado do MV Financing no arquivo.');
+      toast('Nenhum dado do Vell Financing no arquivo.');
       input.value = '';
       return;
     }

@@ -273,13 +273,11 @@ body.demo .logout-btn {
   align-items: center;
   gap: 9px;
 }
-.mvb {
+.brandmark {
   width: 26px;
   height: 26px;
-  background: var(--tx);
-  color: var(--bg);
-  font-size: 10px;
-  font-weight: 700;
+  background: #2554ff;
+  color: #fff;
   border-radius: 7px;
   display: flex;
   align-items: center;
@@ -296,6 +294,13 @@ body.demo .logout-btn {
   color: var(--mu);
   margin-top: 4px;
   padding-left: 35px;
+}
+.logo-sub a {
+  color: inherit;
+  text-decoration: none;
+}
+.logo-sub a:hover {
+  text-decoration: underline;
 }
 .nav-sect {
   padding: 10px 0 2px;

@@ -1,8 +1,8 @@
 {
-  "name": "mvfinancing",
+  "name": "vellfinancing",
   "private": true,
   "version": "1.0.0",
-  "description": "MV Financing — controle financeiro pessoal",
+  "description": "Vell Financing — controle financeiro pessoal",
   "engines": {
     "node": ">=20"
   },

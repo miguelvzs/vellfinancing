@@ -30,7 +30,7 @@ function setTab(m) {
 // Substitua pelo Client ID OAuth criado no Google Cloud Console (Credentials
 // > OAuth client ID > Web application) — é público, não é segredo, mas
 // precisa bater com GOOGLE_CLIENT_ID do backend (ver README.md).
-const GOOGLE_CLIENT_ID = '';
+const GOOGLE_CLIENT_ID = '370769289658-hfjnt6rhpogp07f0sjccp9ltvvnfsi5j.apps.googleusercontent.com';
 
 function authMode(m) {
   authErr('');

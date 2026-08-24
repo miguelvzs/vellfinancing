@@ -15,12 +15,17 @@ const { pgTable, serial, text, integer, boolean, date, timestamp, uniqueIndex, i
 const categoryKind = pgEnum('category_kind', ['income', 'expense']);
 const txType = pgEnum('tx_type', ['income', 'expense', 'bill']);
 
+// passHash/question/ansHash são opcionais pra permitir contas só-Google (sem
+// senha nem pergunta de segurança). googleId identifica a conta Google
+// (sub do token, imutável); email é só informativo (também vira o username).
 const users = pgTable('users', {
   id: serial('id').primaryKey(),
   username: text('username').notNull().unique(),
-  passHash: text('pass_hash').notNull(),
-  question: text('question').notNull(),
-  ansHash: text('ans_hash').notNull(),
+  passHash: text('pass_hash'),
+  question: text('question'),
+  ansHash: text('ans_hash'),
+  googleId: text('google_id').unique(),
+  email: text('email'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

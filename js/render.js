@@ -57,7 +57,7 @@ function renderNet(data) {
 }
 
 function rowActs(type, id, canEdit) {
-  return `<div class="rowacts">${canEdit ? `<button class="eb" title="Editar" onclick="editItem('${type}','${id}')">&#9998;</button>` : ''}<button class="xb" title="Remover" onclick="askDel('${type}','${id}')">&#215;</button></div>`;
+  return `<div class="rowacts">${canEdit ? `<button class="eb" title="Editar" data-click="editItem" data-click-args='${argsAttr([type, id])}'>&#9998;</button>` : ''}<button class="xb" title="Remover" data-click="askDel" data-click-args='${argsAttr([type, id])}'>&#215;</button></div>`;
 }
 
 function renderInc(data) {
@@ -115,7 +115,7 @@ function renderBills(data) {
       .map(
         (b) => `<div>
       <div class="bill-row">
-        <div class="bchk ${b.paid ? 'on' : ''}" onclick="togBill('${b.id}')"></div>
+        <div class="bchk ${b.paid ? 'on' : ''}" data-click="togBill" data-click-args='${argsAttr([b.id])}'></div>
         <div class="bico" style="background:${CL[b.cat] || '#6b6b72'}20">${IC2[b.cat] || '📌'}</div>
         <div class="binfo"><div class="bname ${b.paid ? 'pd' : ''}">${esc(b.name)}${b.recur ? '<span class="recpill">mensal</span>' : ''}</div><div class="bmeta">${esc(b.cat)}${b.dueDate ? ' · ' + new Date(b.dueDate + 'T12:00:00').toLocaleDateString('pt-BR') : ''}</div></div>
         ${dtag(b.dueDate, b.paid)}
@@ -157,7 +157,7 @@ function renderGoals() {
       </div>
       <div class="ptk"><div class="pfl ${p >= 100 ? 'done' : ''}" style="width:${p}%"></div></div>
       <div class="g-amts"><span>${brl(g.current)} guardado</span><span>${rem > 0 ? 'Faltam ' + brl(rem) : 'Meta concluída ✓'}</span><span>Meta: ${brl(g.target)}</span></div>
-      <div class="g-acts"><button class="gbtn" onclick="depGoal('${g.id}')">+ Depositar</button><button class="gbtn" onclick="editItem('goal','${g.id}')">Editar</button><button class="gbtn del" onclick="askDel('goal','${g.id}')">Remover</button></div>
+      <div class="g-acts"><button class="gbtn" data-click="depGoal" data-click-args='${argsAttr([g.id])}'>+ Depositar</button><button class="gbtn" data-click="editItem" data-click-args='${argsAttr(['goal', g.id])}'>Editar</button><button class="gbtn del" data-click="askDel" data-click-args='${argsAttr(['goal', g.id])}'>Remover</button></div>
     </div>`;
     })
     .join('');
@@ -208,13 +208,13 @@ function renderHist(data) {
     ['Todos', 'Receitas', 'Despesas', 'Contas']
       .map((f, i) => {
         const keys = ['all', 'income', 'expense', 'bill'];
-        return `<button class="ftag ${hfilt === keys[i] ? 'on' : ''}" onclick="setHF('${keys[i]}')">${f}</button>`;
+        return `<button class="ftag ${hfilt === keys[i] ? 'on' : ''}" data-click="setHF" data-click-args='${argsAttr([keys[i]])}'>${f}</button>`;
       })
       .join('') +
-    `<input class="srch" id="histSrch" placeholder="Buscar..." value="${esc(hquery)}" oninput="searchHist(this.value)">` +
+    `<input class="srch" id="histSrch" placeholder="Buscar..." value="${esc(hquery)}" data-input="searchHist" data-input-args='${argsAttr(['$value'])}'>` +
     (DEMO
       ? ''
-      : `<label style="font-size:11px;color:var(--mu);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap"><input type="checkbox" id="histGlobal" ${hglobal ? 'checked' : ''} onchange="toggleHGlobal(this.checked)">Todo o histórico</label>`);
+      : `<label style="font-size:11px;color:var(--mu);display:flex;align-items:center;gap:5px;cursor:pointer;white-space:nowrap"><input type="checkbox" id="histGlobal" ${hglobal ? 'checked' : ''} data-change="toggleHGlobal" data-change-args='${argsAttr(['$checked'])}'>Todo o histórico</label>`);
   const el = document.getElementById('histList');
 
   let all;
@@ -351,10 +351,10 @@ function renderCategoryMgmt() {
       (c) => `<div class="li">
     <div class="lidot" style="background:${CL[c.name] || '#6b6b72'}"></div>
     <div class="lii">
-      <input value="${esc(c.name)}" onchange="renameCategory(${c.id},this.value)" style="background:none;border:none;color:inherit;font-family:inherit;font-size:13px;width:100%;padding:2px 0" />
+      <input value="${esc(c.name)}" data-change="renameCategory" data-change-args='${argsAttr([c.id, '$value'])}' style="background:none;border:none;color:inherit;font-family:inherit;font-size:13px;width:100%;padding:2px 0" />
     </div>
     <span style="font-size:11px;color:var(--mu);white-space:nowrap">${c.kind === 'income' ? 'Receita' : 'Despesa'}</span>
-    <button class="xb" title="Remover" onclick="deleteCategory(${c.id})">&#215;</button>
+    <button class="xb" title="Remover" data-click="deleteCategory" data-click-args='${argsAttr([c.id])}'>&#215;</button>
   </div>`,
     )
     .join('');
@@ -424,11 +424,11 @@ function renderBudget(data) {
     return `<div class="budget-row">
       <div class="bico" style="background:${CL[c] || '#6b6b72'}20">${IC2[c] || '📌'}</div>
       <div class="budget-inf">
-        <div class="budget-top"><span class="budget-name">${c}</span>${tag}</div>
+        <div class="budget-top"><span class="budget-name">${esc(c)}</span>${tag}</div>
         <div class="ptk" style="margin-top:6px"><div class="pfl" style="width:${lim > 0 ? Math.min(100, pct) : 0}%;background:${col}"></div></div>
         <div class="budget-amts"><span>${brl(sp)} gasto</span><span>${lim > 0 ? 'Limite ' + brl(lim) : 'Defina um limite →'}</span></div>
       </div>
-      <input class="budget-in" type="number" step="0.01" placeholder="0,00" value="${budgets[c] || ''}" onchange="setBudget('${c}',this.value)">
+      <input class="budget-in" type="number" step="0.01" placeholder="0,00" value="${budgets[c] || ''}" data-change="setBudget" data-change-args='${argsAttr([c, '$value'])}'>
     </div>`;
   }).join('');
   const bs = document.getElementById('budgetSum');

@@ -19,16 +19,20 @@
           <span>MV Financing</span>
         </div>
         <div class="auth-tabs">
-          <button class="atab on" id="tabLogin" onclick="authMode('login')">Entrar</button>
-          <button class="atab" id="tabReg" onclick="authMode('register')">Criar conta</button>
+          <button class="atab on" id="tabLogin" data-click="authMode" data-click-args='["login"]'>Entrar</button>
+          <button class="atab" id="tabReg" data-click="authMode" data-click-args='["register"]'>Criar conta</button>
         </div>
         <div id="authBody"></div>
+        <div class="auth-google-wrap" id="authGoogleWrap">
+          <div class="auth-sep"><span>ou</span></div>
+          <div id="gBtn"></div>
+        </div>
         <div class="auth-err" id="authErr"></div>
       </div>
     </div>
 
     <div class="app">
-      <div class="scrim" id="scrim" onclick="closeSidebar()"></div>
+      <div class="scrim" id="scrim" data-click="closeSidebar"></div>
       <aside class="sidebar" id="sidebar">
         <div class="logo">
           <div class="logo-row">
@@ -51,8 +55,8 @@
         </div>
         <div class="nav-sect" style="border-top: 1px solid var(--bd)">
           <span class="nav-lbl">Exportar</span>
-          <button class="nv" onclick="exportExcel()"><span class="ndot"></span>Planilha Excel</button>
-          <button class="nv" onclick="exportReport()"><span class="ndot"></span>Relatório Mensal</button>
+          <button class="nv" data-click="exportExcel"><span class="ndot"></span>Planilha Excel</button>
+          <button class="nv" data-click="exportReport"><span class="ndot"></span>Relatório Mensal</button>
         </div>
         <div class="nav-sect" style="border-top: 1px solid var(--bd)">
           <span class="nav-lbl">Sistema</span>
@@ -61,7 +65,7 @@
         <div class="sf-foot">
           <span class="sync-dot"></span><span id="footUser"></span><br />Sincronizado na nuvem<br /><button
             class="logout-btn"
-            onclick="logout()"
+            data-click="logout"
           >
             Sair da conta
           </button>
@@ -71,19 +75,19 @@
       <main class="main">
         <div class="page-hd">
           <div class="hd-l">
-            <button class="burger" onclick="openSidebar()" aria-label="Menu">&#9776;</button>
+            <button class="burger" data-click="openSidebar" aria-label="Menu">&#9776;</button>
             <div>
               <div class="pg-title" id="pgTitle">Visão Geral</div>
               <div class="pg-sub" id="pgSub"></div>
             </div>
           </div>
           <div class="hd-acts">
-            <button class="today-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">&#9728;</button>
-            <button class="today-btn" id="todayBtn" onclick="goToday()">Hoje</button>
+            <button class="today-btn" id="themeBtn" data-click="toggleTheme" title="Alternar tema">&#9728;</button>
+            <button class="today-btn" id="todayBtn" data-click="goToday">Hoje</button>
             <div class="mnav">
-              <button onclick="chMon(-1)" aria-label="Mês anterior">&#8249;</button>
+              <button data-click="chMon" data-click-args="[-1]" aria-label="Mês anterior">&#8249;</button>
               <span id="monLabel"></span>
-              <button onclick="chMon(1)" aria-label="Próximo mês">&#8250;</button>
+              <button data-click="chMon" data-click-args="[1]" aria-label="Próximo mês">&#8250;</button>
             </div>
           </div>
         </div>
@@ -93,9 +97,9 @@
           <div class="sal">
             <span class="sal-lbl">Renda mensal</span>
             <div class="sal-sep"></div>
-            <input type="number" id="salIn" placeholder="0,00" step="0.01" onkeydown="if (event.key === 'Enter') setSalary();" />
+            <input type="number" id="salIn" placeholder="0,00" step="0.01" data-keydown="setSalary" />
             <span class="sal-ok" id="salOk">&#10003; Salvo</span>
-            <button onclick="setSalary()">Salvar</button>
+            <button data-click="setSalary">Salvar</button>
           </div>
           <div class="sum" id="sumCards"></div>
           <div class="net" id="netStrip"></div>
@@ -103,13 +107,15 @@
             <div class="ov-lists">
               <div class="div-r">
                 <div class="panel-hd">
-                  <span class="panel-title">Receitas</span><button class="adbtn" onclick="openModal('income')">+ Adicionar</button>
+                  <span class="panel-title">Receitas</span
+                  ><button class="adbtn" data-click="openModal" data-click-args='["income"]'>+ Adicionar</button>
                 </div>
                 <div id="incList"></div>
               </div>
               <div>
                 <div class="panel-hd">
-                  <span class="panel-title">Despesas</span><button class="adbtn" onclick="openModal('expense')">+ Adicionar</button>
+                  <span class="panel-title">Despesas</span
+                  ><button class="adbtn" data-click="openModal" data-click-args='["expense"]'>+ Adicionar</button>
                 </div>
                 <div id="expList"></div>
               </div>
@@ -126,7 +132,8 @@
           <div class="sum" id="billSum" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 15px"></div>
           <div class="panel">
             <div class="panel-hd">
-              <span class="panel-title">Contas do mês</span><button class="adbtn" onclick="openModal('bill')">+ Nova conta</button>
+              <span class="panel-title">Contas do mês</span
+              ><button class="adbtn" data-click="openModal" data-click-args='["bill"]'>+ Nova conta</button>
             </div>
             <div id="billsList"></div>
           </div>
@@ -148,7 +155,8 @@
         <div id="page-goals" class="page">
           <div class="panel">
             <div class="panel-hd">
-              <span class="panel-title">Metas de economia</span><button class="adbtn" onclick="openModal('goal')">+ Nova meta</button>
+              <span class="panel-title">Metas de economia</span
+              ><button class="adbtn" data-click="openModal" data-click-args='["goal"]'>+ Nova meta</button>
             </div>
             <div id="goalsList"></div>
           </div>
@@ -159,7 +167,8 @@
           <div class="inv-sum" id="invSum"></div>
           <div class="panel" style="margin-bottom: 13px">
             <div class="panel-hd">
-              <span class="panel-title">Carteira</span><button class="adbtn" onclick="openModal('invest')">+ Adicionar ativo</button>
+              <span class="panel-title">Carteira</span
+              ><button class="adbtn" data-click="openModal" data-click-args='["invest"]'>+ Adicionar ativo</button>
             </div>
             <div id="invList"></div>
           </div>
@@ -197,15 +206,22 @@
                 de dispositivo.
               </p>
               <div class="set-acts">
-                <button class="set-btn prim" onclick="exportBackup()">Baixar backup (.json)</button>
+                <button class="set-btn prim" data-click="exportBackup">Baixar backup (.json)</button>
               </div>
             </div>
             <div class="set-card">
               <h3>Restaurar backup</h3>
               <p>Importe um arquivo de backup exportado anteriormente. Isso substitui os dados atuais pelos do arquivo.</p>
               <div class="set-acts">
-                <button class="set-btn" onclick="document.getElementById('importFile').click()">Selecionar arquivo</button>
-                <input type="file" id="importFile" accept="application/json,.json" style="display: none" onchange="importBackup(this)" />
+                <button class="set-btn" data-click="pickImportFile">Selecionar arquivo</button>
+                <input
+                  type="file"
+                  id="importFile"
+                  accept="application/json,.json"
+                  style="display: none"
+                  data-change="importBackup"
+                  data-change-args='["$this"]'
+                />
               </div>
             </div>
             <div class="set-card">
@@ -215,10 +231,15 @@
                 correto. Reenviar o mesmo extrato não duplica nada.
               </p>
               <div class="set-acts">
-                <button class="set-btn prim" onclick="document.getElementById('extratoFile').click()">
-                  Selecionar extrato (.ofx/.csv)
-                </button>
-                <input type="file" id="extratoFile" accept=".ofx,.csv" style="display: none" onchange="importExtrato(this)" />
+                <button class="set-btn prim" data-click="pickExtratoFile">Selecionar extrato (.ofx/.csv)</button>
+                <input
+                  type="file"
+                  id="extratoFile"
+                  accept=".ofx,.csv"
+                  style="display: none"
+                  data-change="importExtrato"
+                  data-change-args='["$this"]'
+                />
               </div>
             </div>
             <div class="set-card">
@@ -239,21 +260,21 @@
                   </select>
                 </div>
               </div>
-              <div class="set-acts"><button class="set-btn prim" onclick="addCategory()">+ Adicionar categoria</button></div>
+              <div class="set-acts"><button class="set-btn prim" data-click="addCategory">+ Adicionar categoria</button></div>
             </div>
             <div class="set-card">
               <h3>Trocar senha</h3>
               <p>Altere a senha da sua conta. Precisa informar a senha atual.</p>
               <div class="fld"><label>Senha atual</label><input id="ch-cur" type="password" autocomplete="current-password" /></div>
               <div class="fld"><label>Nova senha (mín. 6)</label><input id="ch-new" type="password" autocomplete="new-password" /></div>
-              <div class="set-acts"><button class="set-btn prim" onclick="changePass()">Salvar nova senha</button></div>
+              <div class="set-acts"><button class="set-btn prim" data-click="changePass">Salvar nova senha</button></div>
             </div>
             <div class="set-card">
               <h3>Zona de perigo</h3>
               <p>Ações abaixo são irreversíveis. Exporte um backup antes.</p>
               <div class="set-acts">
-                <button class="set-btn danger" onclick="clearMonth()">Limpar mês atual</button>
-                <button class="set-btn danger" onclick="clearAll()">Apagar tudo</button>
+                <button class="set-btn danger" data-click="clearMonth">Limpar mês atual</button>
+                <button class="set-btn danger" data-click="clearAll">Apagar tudo</button>
               </div>
             </div>
           </div>
@@ -266,8 +287,8 @@
         <div class="modal-title" id="mTitle"></div>
         <div id="mBody"></div>
         <div class="modal-acts">
-          <button class="mcnl" onclick="closeModal()">Cancelar</button>
-          <button class="msave" id="mSaveBtn" onclick="saveModal()">Salvar</button>
+          <button class="mcnl" data-click="closeModal">Cancelar</button>
+          <button class="msave" id="mSaveBtn" data-click="saveModal">Salvar</button>
         </div>
       </div>
     </div>
@@ -277,7 +298,7 @@
         <div class="modal-title" id="confTitle">Confirmar</div>
         <div id="confMsg" style="font-size: 13px; color: var(--mu); line-height: 1.6"></div>
         <div class="modal-acts">
-          <button class="mcnl" onclick="closeConf()">Cancelar</button>
+          <button class="mcnl" data-click="closeConf">Cancelar</button>
           <button class="msave danger" id="confYes">Confirmar</button>
         </div>
       </div>
@@ -285,6 +306,7 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="/js/bind.js"></script>
     <script src="/js/loader.js"></script>
     <script src="/js/state.js"></script>
     <script src="/js/ui.js"></script>

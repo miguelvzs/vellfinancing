@@ -4,8 +4,20 @@
 // passou desse limite depois da migração do §6. Lógica de cada ação
 // idêntica à de quando eram arquivos separados, só o roteamento mudou.
 const bcrypt = require('bcryptjs');
+const { OAuth2Client } = require('google-auth-library');
 const { readBody, norm, rateLimit, sign, verify, timingSafeCompare } = require('../lib/auth');
-const { getUserByUsername, createUser, updateUserPassword } = require('../lib/users');
+const { getUserByUsername, createUser, updateUserPassword, getOrCreateGoogleUser } = require('../lib/users');
+
+// Cliente lazy (mesmo motivo do getDb() em db/client.js): não falha na
+// importação do módulo se GOOGLE_CLIENT_ID ainda não estiver configurada.
+let _googleClient = null;
+function getGoogleClient() {
+  if (!_googleClient) {
+    if (!process.env.GOOGLE_CLIENT_ID) throw new Error('GOOGLE_CLIENT_ID não configurada.');
+    _googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+  }
+  return _googleClient;
+}
 
 const MAX_USER = 32;
 const MAX_PASSWORD = 128;
@@ -56,6 +68,28 @@ async function doRegister(req, res, body) {
   return res.status(200).json({ token: sign(u), username: u });
 }
 
+async function doGoogle(req, res, body) {
+  const { credential } = body;
+  if (!credential) return res.status(400).json({ error: 'Token do Google ausente.' });
+  const allowed = await rateLimit(req, 'google', 'anon', 20, 300); // 20 tentativas / 5min por IP (identidade só se sabe após verificar o token)
+  if (!allowed) return res.status(429).json({ error: 'Muitas tentativas. Aguarde alguns minutos e tente novamente.' });
+
+  let payload;
+  try {
+    const client = getGoogleClient();
+    const ticket = await client.verifyIdToken({ idToken: credential, audience: process.env.GOOGLE_CLIENT_ID });
+    payload = ticket.getPayload();
+  } catch {
+    return res.status(401).json({ error: 'Token do Google inválido.' });
+  }
+  if (!payload || !payload.sub || !payload.email || !payload.email_verified) {
+    return res.status(401).json({ error: 'Conta Google sem e-mail verificado.' });
+  }
+
+  const user = await getOrCreateGoogleUser({ googleId: payload.sub, email: norm(payload.email) });
+  return res.status(200).json({ token: sign(user.username), username: user.username });
+}
+
 async function doForgot(req, res, body) {
   const u = norm(body.username);
   if (!u) return res.status(400).json({ error: 'Informe o usuário.' });
@@ -88,6 +122,7 @@ async function doChange(req, res, body) {
   const { current, password } = body;
   const rec = await getUserByUsername(auth.u);
   if (!rec) return res.status(404).json({ error: 'Usuário não encontrado.' });
+  if (!rec.passHash) return res.status(400).json({ error: 'Esta conta usa login com Google e não tem senha própria.' });
   const ok = await bcrypt.compare(String(current || ''), rec.passHash);
   if (!ok) return res.status(401).json({ error: 'Senha atual incorreta.' });
   if (String(password || '').length < 6 || String(password || '').length > 128)
@@ -97,7 +132,7 @@ async function doChange(req, res, body) {
   return res.status(200).json({ ok: true });
 }
 
-const ACTIONS = { login: doLogin, register: doRegister, forgot: doForgot, reset: doReset, change: doChange };
+const ACTIONS = { login: doLogin, register: doRegister, google: doGoogle, forgot: doForgot, reset: doReset, change: doChange };
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido.' });

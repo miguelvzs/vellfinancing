@@ -113,6 +113,9 @@ function parseCsvExtrato(text) {
 // são feitos no server (POST /api/import), que é a fonte da verdade pro
 // hash de dedup, então reimportar o mesmo extrato em outro dispositivo não
 // duplica nada.
+function pickExtratoFile() {
+  document.getElementById('extratoFile').click();
+}
 function importExtrato(input) {
   if (DEMO) {
     demoRO();

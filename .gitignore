@@ -15,3 +15,6 @@ backups/
 
 # estado local de sessão do Claude Code (não é do projeto)
 .claude/
+
+# .env.example é template sem segredo — precisa ser versionado
+!.env.example
